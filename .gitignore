@@ -2,5 +2,6 @@
 *.swp
 tarballs/
 .stack-work/
+.stack-test/
 dist-newstyle/
 taskell2.cabal
