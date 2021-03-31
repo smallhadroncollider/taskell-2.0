@@ -1,0 +1,6 @@
+*~
+*.swp
+tarballs/
+.stack-work/
+dist-newstyle/
+taskell2.cabal

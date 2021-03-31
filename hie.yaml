@@ -1,0 +1,10 @@
+cradle:
+  stack:
+    - path: "./app"
+      component: "taskell2"
+
+    - path: "./src"
+      component: "taskell2:lib"
+
+    - path: "./test"
+      component: "taskell2:taskell2-test"
