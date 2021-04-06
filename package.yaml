@@ -34,6 +34,9 @@ default-extensions:
 
 library:
   source-dirs: src
+  dependencies:
+  - hashable
+  - microlens-th
 
 executables:
   taskell2:
