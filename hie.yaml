@@ -8,3 +8,6 @@ cradle:
 
     - path: "./test"
       component: "taskell2:taskell2-test"
+
+    - path: "./benchmarks"
+      component: "taskell2:bench:criterion-benchmarks"

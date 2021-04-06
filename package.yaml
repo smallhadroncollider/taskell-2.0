@@ -63,3 +63,11 @@ tests:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
+
+benchmarks:
+  criterion-benchmarks:
+    main:                Main.hs
+    source-dirs:         benchmarks
+    dependencies:
+    - taskell2
+    - criterion

@@ -1,7 +1,9 @@
 *~
 *.swp
 tarballs/
-.stack-work/
-.stack-test/
+.stack-*/
 dist-newstyle/
+benchmarks/results/
+
 taskell2.cabal
+benchmark.html
