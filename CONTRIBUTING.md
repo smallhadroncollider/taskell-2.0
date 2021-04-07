@@ -1,12 +1,16 @@
-## Workflow
+# Contributing
+
+## Git
+
+### Workflow
 
 Use the [Git Flow workflow](https://nvie.com/posts/a-successful-git-branching-model/)
 
-## Hooks
+### Hooks
 
 Please use the following Git Hooks.
 
-### `pre-commit`
+#### `pre-commit`
 
 ```shell
 #! /bin/zsh
@@ -17,3 +21,11 @@ else
     stack test --work-dir .stack-test
 fi
 ```
+
+## Code
+
+### Optics
+
+- `a ^. x`: read the `x` property of `a`
+- `a & x .~ y`: set the `x` property of `a` to `y`
+- `a & x %~ fn`: update the `x` property of `a` using `fn`
