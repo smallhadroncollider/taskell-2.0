@@ -13,7 +13,7 @@ module Taskell.Data.List (
 import RIO
 
 import Taskell.Data.Types.List
-import Taskell.Data.Task
+import Taskell.Data.Task (TaskID)
 
 -- removing tasks from lists
 removeFromList :: TaskID -> List -> List
