@@ -5,6 +5,7 @@ module Taskell.Data.Types.Taskell (
 
 ,   lists
 ,   tasks
+,   listsOrder
 
 ) where
 

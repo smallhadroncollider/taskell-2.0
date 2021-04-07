@@ -4,11 +4,16 @@ module Taskell.Data.Taskell (
 
 ,   removeTasks
 ,   tasksForList
+,   tasksForTask
+,   getLists
+,   moveListLeft
+,   moveListRight
 
 ) where
 
 import RIO
 import qualified RIO.HashMap as HM (delete, lookup, adjust)
+import qualified RIO.List as L (splitAt, span)
 
 import qualified Taskell.Data.Types.Taskell as TT
 import qualified Taskell.Data.List as TTL
@@ -18,14 +23,45 @@ import qualified Taskell.Data.Task as TTT
 getList :: TTL.ListID -> TT.Taskell -> Maybe TTL.List
 getList listID taskell = HM.lookup listID (taskell ^. TT.lists)
 
+getLists :: TT.Taskell -> [TTL.List]
+getLists taskell = fromMaybe [] $
+    traverse (`HM.lookup` (taskell ^. TT.lists)) (taskell ^. TT.listsOrder)
+
+-- reordering lists
+moveLeft :: TTL.ListID -> TTL.ListIDs -> TTL.ListIDs
+moveLeft listID lists = prefix <> value <> after <> suffix
+    where (before, rest) = L.span (/= listID) lists
+          (value, suffix) = L.splitAt 1 rest
+          (prefix, after) = L.splitAt (length before - 1) before
+
+moveRight :: TTL.ListID -> TTL.ListIDs -> TTL.ListIDs
+moveRight listID lists = prefix <> before <> value <> suffix
+    where (prefix, rest) = L.span (/= listID) lists
+          (value, after) = L.splitAt 1 rest
+          (before, suffix) = L.splitAt 1 after
+
+moveListLeft :: TTL.ListID -> TT.Taskell -> TT.Taskell
+moveListLeft listID = TT.listsOrder %~ moveLeft listID
+
+moveListRight :: TTL.ListID -> TT.Taskell -> TT.Taskell
+moveListRight listID = TT.listsOrder %~ moveRight listID
+
+
+
 -- getting tasks
-tasksForList :: TTL.ListID -> TT.Taskell -> Maybe [TTT.Task]
-tasksForList listID taskell = do
-    list <- getList listID taskell
-    traverse (`HM.lookup` (taskell ^. TT.tasks)) (list ^. TTL.tasks)
+taskIDsToTasks :: TT.Taskell -> TTT.TaskIDs -> Maybe [TTT.Task]
+taskIDsToTasks taskell = traverse (`HM.lookup` (taskell ^. TT.tasks))
+
+tasksForList :: TTL.ListID -> TT.Taskell -> [TTT.Task]
+tasksForList listID taskell = fromMaybe [] $
+    getList listID taskell >>= taskIDsToTasks taskell . (^. TTL.tasks)
+
+tasksForTask :: TTT.TaskID -> TT.Taskell -> [TTT.Task]
+tasksForTask taskID taskell = fromMaybe [] $
+    getTask taskID taskell >>= taskIDsToTasks taskell . (^. TTT.tasks)
 
 getTask :: TTT.TaskID -> TT.Taskell -> Maybe TTT.Task
-getTask taskID taskell = taskID `HM.lookup` (taskell ^. TT.tasks)
+getTask taskID taskell = HM.lookup taskID (taskell ^. TT.tasks)
 
 
 -- removing tasks

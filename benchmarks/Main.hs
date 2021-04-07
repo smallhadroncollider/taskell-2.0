@@ -9,7 +9,7 @@ import Taskell.Data.Types.Contributor (Contributor (..), Contributors, Contribut
 import Taskell.Data.Types.List as L (List (..), Lists, ListID (..))
 import Taskell.Data.Types.Task as T (Task (..), Tasks, TaskID (..), Parent (..))
 
-import Taskell.Data.Taskell (Taskell (..), tasksForList, removeTasks)
+import Taskell.Data.Taskell (Taskell (..), tasksForList, tasksForTask, removeTasks, getLists, moveListLeft, moveListRight)
 
 
 -- test data
@@ -29,9 +29,9 @@ allLists :: Lists
 allLists = HM.fromList [ (ListID 1, list1) , (ListID 2, list2) ]
 
 task1, task2, task3, task4, task5, task6, task7, task8 :: Task
-task1 = Task "First Task" (ParentList (ListID 1)) "Do first thing" (TaskID <$> [6]) [] (ContributorID <$> [1, 2])
-task2 = Task "Second Task" (ParentList (ListID 2)) "Do second thing" [] (TaskID <$> [4, 1]) (ContributorID <$> [1])
-task3 = Task "Third Task" (ParentList (ListID 1)) "Do third thing" [] (TaskID <$> [6]) (ContributorID <$> [2])
+task1 = Task "First Task" (ParentList (ListID 1)) "Do first thing" (TaskID <$> [6]) (TaskID <$> [5]) (ContributorID <$> [1, 2])
+task2 = Task "Second Task" (ParentList (ListID 2)) "Do second thing" [] (TaskID <$> [3, 1]) (ContributorID <$> [1])
+task3 = Task "Third Task" (ParentList (ListID 1)) "Do third thing" [] (TaskID <$> [6, 2]) (ContributorID <$> [2])
 task4 = Task "Fourth Task" (ParentList (ListID 2)) "Do fourth thing" [] [] (ContributorID <$> [3])
 task5 = Task "Fifth Task" (ParentList (ListID 1)) "Do fifth thing" [] (TaskID <$> [1]) (ContributorID <$> [2])
 task6 = Task "Sub Task" (ParentTask (TaskID 1)) "Sub task" (TaskID <$> [7]) [] []
@@ -56,15 +56,30 @@ benchData = Taskell
       "Some bench data"
       allContributors
       allLists
-      [ListID 1, ListID 2]
+      [ListID 2, ListID 1]
       allTasks
 
 main :: IO ()
 main =
     defaultMain [
-        bgroup "tasksForList" [
+        bench "getLists" $ whnf getLists benchData
+
+    ,   bgroup "moveLists" [
+            bench "move left - no change" $ whnf (moveListLeft (ListID 2)) benchData
+        ,   bench "move left - change" $ whnf (moveListLeft (ListID 1)) benchData
+        ,   bench "move right - no change" $ whnf (moveListRight (ListID 1)) benchData
+        ,   bench "move right - change" $ whnf (moveListRight (ListID 2)) benchData
+        ]
+
+    ,   bgroup "tasksForList" [
             bench "existing list" $ whnf (tasksForList (ListID 1)) benchData
         ,   bench "non-existing list" $ whnf (tasksForList (ListID 8)) benchData
+        ]
+
+    ,   bgroup "tasksForTasks" [
+            bench "existing task - with sub-tasks" $ whnf (tasksForTask (TaskID 1)) benchData
+        ,   bench "existing task - without sub-tasks" $ whnf (tasksForTask (TaskID 8)) benchData
+        ,   bench "non-existing task" $ whnf (tasksForTask (TaskID 50)) benchData
         ]
 
     ,   bgroup "removeTasks" [
