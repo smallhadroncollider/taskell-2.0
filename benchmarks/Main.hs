@@ -29,14 +29,14 @@ allLists :: Lists
 allLists = HM.fromList [ (ListID 1, list1) , (ListID 2, list2) ]
 
 task1, task2, task3, task4, task5, task6, task7, task8 :: Task
-task1 = Task "First Task" (ParentList (ListID 1)) "Do first thing" (TaskID <$> [6]) (TaskID <$> [5]) (ContributorID <$> [1, 2])
-task2 = Task "Second Task" (ParentList (ListID 2)) "Do second thing" [] (TaskID <$> [3, 1]) (ContributorID <$> [1])
-task3 = Task "Third Task" (ParentList (ListID 1)) "Do third thing" [] (TaskID <$> [6, 2]) (ContributorID <$> [2])
-task4 = Task "Fourth Task" (ParentList (ListID 2)) "Do fourth thing" [] [] (ContributorID <$> [3])
-task5 = Task "Fifth Task" (ParentList (ListID 1)) "Do fifth thing" [] (TaskID <$> [1]) (ContributorID <$> [2])
-task6 = Task "Sub Task" (ParentTask (TaskID 1)) "Sub task" (TaskID <$> [7]) [] []
-task7 = Task "Sub Sub Task" (ParentTask (TaskID 6)) "Sub sub task" (TaskID <$> [8]) [] []
-task8 = Task "Sub Sub Sub Task" (ParentTask (TaskID 7)) "Sub sub sub task" [] [] []
+task1 = Task "First Task" (ParentList (ListID 1)) "Do first thing" (TaskID <$> [6]) (TaskID <$> [5]) (ContributorID <$> [1, 2]) []
+task2 = Task "Second Task" (ParentList (ListID 2)) "Do second thing" [] (TaskID <$> [3, 1]) (ContributorID <$> [1]) []
+task3 = Task "Third Task" (ParentList (ListID 1)) "Do third thing" [] (TaskID <$> [6, 2]) (ContributorID <$> [2]) []
+task4 = Task "Fourth Task" (ParentList (ListID 2)) "Do fourth thing" [] [] (ContributorID <$> [3]) []
+task5 = Task "Fifth Task" (ParentList (ListID 1)) "Do fifth thing" [] (TaskID <$> [1]) (ContributorID <$> [2]) []
+task6 = Task "Sub Task" (ParentTask (TaskID 1)) "Sub task" (TaskID <$> [7]) [] [] []
+task7 = Task "Sub Sub Task" (ParentTask (TaskID 6)) "Sub sub task" (TaskID <$> [8]) [] [] []
+task8 = Task "Sub Sub Sub Task" (ParentTask (TaskID 7)) "Sub sub sub task" [] [] [] []
 
 allTasks :: Tasks
 allTasks = HM.fromList [

@@ -6,11 +6,11 @@ import qualified RIO.HashMap as HM (fromList)
 import Test.Hspec
 
 import Taskell.Data.Types.Contributor (Contributor (..), Contributors, ContributorID (..))
-import Taskell.Data.Types.List as L (List (..), Lists, ListID (..), tasks)
+import Taskell.Data.Types.List as L (List (..), Lists, ListID (..), tasks, title)
 import Taskell.Data.Types.Task as T (Task (..), Tasks, TaskID (..), Parent (..), tasks, related)
 import Taskell.Data.Types.Taskell (listsOrder)
 
-import Taskell.Data.Taskell (Taskell (..), tasksForList, tasksForTask, removeTasks, getLists, moveListLeft, moveListRight)
+import Taskell.Data.Taskell (Taskell (..), tasksForList, tasksForTask, removeTasks, getLists, moveListLeft, moveListRight, rename, changeDescription, renameList)
 
 
 -- test data
@@ -30,14 +30,14 @@ allLists :: Lists
 allLists = HM.fromList [ (ListID 1, list1) , (ListID 2, list2) ]
 
 task1, task2, task3, task4, task5, task6, task7, task8 :: Task
-task1 = Task "First Task" (ParentList (ListID 1)) "Do first thing" (TaskID <$> [6]) (TaskID <$> [5]) (ContributorID <$> [1, 2])
-task2 = Task "Second Task" (ParentList (ListID 2)) "Do second thing" [] (TaskID <$> [3, 1]) (ContributorID <$> [1])
-task3 = Task "Third Task" (ParentList (ListID 1)) "Do third thing" [] (TaskID <$> [6, 2]) (ContributorID <$> [2])
-task4 = Task "Fourth Task" (ParentList (ListID 2)) "Do fourth thing" [] [] (ContributorID <$> [3])
-task5 = Task "Fifth Task" (ParentList (ListID 1)) "Do fifth thing" [] (TaskID <$> [1]) (ContributorID <$> [2])
-task6 = Task "Sub Task" (ParentTask (TaskID 1)) "Sub task" (TaskID <$> [7]) [] []
-task7 = Task "Sub Sub Task" (ParentTask (TaskID 6)) "Sub sub task" (TaskID <$> [8]) [] []
-task8 = Task "Sub Sub Sub Task" (ParentTask (TaskID 7)) "Sub sub sub task" [] [] []
+task1 = Task "First Task" (ParentList (ListID 1)) "Do first thing" (TaskID <$> [6]) (TaskID <$> [5]) (ContributorID <$> [1, 2]) []
+task2 = Task "Second Task" (ParentList (ListID 2)) "Do second thing" [] (TaskID <$> [3, 1]) (ContributorID <$> [1]) []
+task3 = Task "Third Task" (ParentList (ListID 1)) "Do third thing" [] (TaskID <$> [6, 2]) (ContributorID <$> [2]) []
+task4 = Task "Fourth Task" (ParentList (ListID 2)) "Do fourth thing" [] [] (ContributorID <$> [3]) []
+task5 = Task "Fifth Task" (ParentList (ListID 1)) "Do fifth thing" [] (TaskID <$> [1]) (ContributorID <$> [2]) []
+task6 = Task "Sub Task" (ParentTask (TaskID 1)) "Sub task" (TaskID <$> [7]) [] [] []
+task7 = Task "Sub Sub Task" (ParentTask (TaskID 6)) "Sub sub task" (TaskID <$> [8]) [] [] []
+task8 = Task "Sub Sub Sub Task" (ParentTask (TaskID 7)) "Sub sub sub task" [] [] [] []
 
 allTasks :: Tasks
 allTasks = HM.fromList [
@@ -72,6 +72,36 @@ spec = do
             it "list 2 left" $ moveListLeft (ListID 2) testData `shouldBe` (testData & listsOrder .~ [ListID 2, ListID 1])
             it "list 1 right" $ moveListRight (ListID 1) testData `shouldBe` (testData & listsOrder .~ [ListID 2, ListID 1])
             it "list 2 right" $ moveListRight (ListID 2) testData `shouldBe` (testData & listsOrder .~ [ListID 1, ListID 2])
+
+        describe "renames" $ do
+            it "changes title" $ rename "Test Changed" testData `shouldBe` Taskell
+                "Test Changed"
+                "Some test data"
+                allContributors
+                allLists
+                [ListID 2, ListID 1]
+                allTasks
+
+        describe "changes description" $ do
+            it "changes description" $ changeDescription "Some test data changed" testData `shouldBe` Taskell
+                "Test"
+                "Some test data changed"
+                allContributors
+                allLists
+                [ListID 2, ListID 1]
+                allTasks
+
+        describe "renamesLists" $ do
+            it "list 1" $ renameList "List 1 Changed" (ListID 1) testData `shouldBe` Taskell
+                "Test"
+                "Some test data"
+                allContributors
+                (HM.fromList [
+                    (ListID 1, list1 & L.title .~ "List 1 Changed")
+                ,   (ListID 2, list2)
+                ])
+                [ListID 2, ListID 1]
+                allTasks
 
         describe "gets tasks for lists" $ do
             it "list 1" $ tasksForList (ListID 1) testData `shouldBe` [task1, task5, task3]

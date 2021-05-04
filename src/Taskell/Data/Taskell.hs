@@ -8,14 +8,18 @@ module Taskell.Data.Taskell (
 ,   getLists
 ,   moveListLeft
 ,   moveListRight
+,   renameList
+,   rename
+,   changeDescription
 
 ) where
 
 import RIO
-import qualified RIO.HashMap as HM (delete, lookup, adjust)
+import qualified RIO.HashMap as HM (delete, lookup, adjust, insert)
 import qualified RIO.List as L (splitAt, span)
 
 import qualified Taskell.Data.Types.Taskell as TT
+import qualified Taskell.Data.Types.List as TTL
 import qualified Taskell.Data.List as TTL
 import qualified Taskell.Data.Task as TTT
 
@@ -45,6 +49,17 @@ moveListLeft listID = TT.listsOrder %~ moveLeft listID
 
 moveListRight :: TTL.ListID -> TT.Taskell -> TT.Taskell
 moveListRight listID = TT.listsOrder %~ moveRight listID
+
+
+-- working with lists
+updateList :: TTL.Update -> TTL.ListID -> TT.Taskell -> TT.Taskell
+updateList fn listID taskell =
+    case fn <$> getList listID taskell of
+        Nothing -> taskell
+        Just list -> taskell & TT.lists %~ HM.insert listID list
+
+renameList :: Text -> TTL.ListID -> TT.Taskell -> TT.Taskell
+renameList title = updateList (TTL.rename title)
 
 
 
@@ -84,3 +99,10 @@ removeFromLists taskID taskell =
 
 removeTasks :: TTT.TaskID -> TT.Taskell -> TT.Taskell
 removeTasks taskID = removeFromTasks taskID . removeFromLists taskID
+
+-- Taskell
+rename :: Text -> TT.Taskell -> TT.Taskell
+rename title = TT.title .~ title
+
+changeDescription :: Text -> TT.Taskell -> TT.Taskell
+changeDescription title = TT.description .~ title

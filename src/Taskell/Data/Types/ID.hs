@@ -9,6 +9,9 @@ module Taskell.Data.Types.ID (
 ,   ContributorID (..)
 ,   ContributorIDs
 
+,   TagID (..)
+,   TagIDs
+
 ) where
 
 import RIO
@@ -38,3 +41,11 @@ type ContributorIDs = [ContributorID]
 
 instance Hashable ContributorID where
     hashWithSalt a (ContributorID b) = hashWithSalt a b
+
+
+-- tags
+newtype TagID = TagID ID deriving (Eq, Show)
+type TagIDs = [TagID]
+
+instance Hashable TagID where
+    hashWithSalt a (TagID b) = hashWithSalt a b

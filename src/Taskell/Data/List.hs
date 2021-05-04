@@ -7,6 +7,7 @@ module Taskell.Data.List (
 
 ,   tasks
 ,   removeFromList
+,   rename
 
 ) where
 
@@ -19,3 +20,5 @@ import Taskell.Data.Task (TaskID)
 removeFromList :: TaskID -> List -> List
 removeFromList taskID = tasks %~ filter (/= taskID)
 
+rename :: Text -> List -> List
+rename text = title .~ text

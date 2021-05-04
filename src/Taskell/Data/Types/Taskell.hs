@@ -3,6 +3,8 @@ module Taskell.Data.Types.Taskell (
 
     Taskell (..)
 
+,   title
+,   description
 ,   lists
 ,   tasks
 ,   listsOrder

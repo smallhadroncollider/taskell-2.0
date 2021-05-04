@@ -17,7 +17,7 @@ import RIO
 
 import Lens.Micro.TH (makeLenses)
 
-import Taskell.Data.Types.ID (TaskID (..), TaskIDs, ListID, ContributorIDs)
+import Taskell.Data.Types.ID (TaskID (..), TaskIDs, ListID, ContributorIDs, TagIDs)
 
 data Parent = ParentTask !TaskID | ParentList !ListID deriving (Eq, Show)
 
@@ -28,6 +28,7 @@ data Task = Task {
     ,   _tasks        :: !TaskIDs
     ,   _related      :: !TaskIDs
     ,   _assigned     :: !ContributorIDs
+    ,   _tags         :: !TagIDs
     } deriving (Eq, Show)
 
 makeLenses ''Task

@@ -5,8 +5,10 @@ module Taskell.Data.Types.List (
 ,   Lists
 ,   ListID (..)
 ,   ListIDs
+,   Update
 
 ,   tasks
+,   title
 
 ) where
 
@@ -25,3 +27,4 @@ makeLenses ''List
 
 type Lists = HashMap ListID List
 
+type Update = List -> List
