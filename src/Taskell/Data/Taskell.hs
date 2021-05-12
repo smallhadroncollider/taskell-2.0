@@ -19,6 +19,8 @@ module Taskell.Data.Taskell
     , moveTaskDown
     , moveTaskLeft
     , moveTaskRight
+    , moveTaskLeftTop
+    , moveTaskRightTop
     ) where
 
 import RIO
@@ -132,26 +134,36 @@ moveTaskDown taskID taskell = do
         TTT.ParentTask parentID -> updateTask (TTT.moveDown taskID) parentID taskell
         TTT.ParentList parentID -> updateList (TTT.moveDown taskID) parentID taskell
 
-moveTaskLR :: (TTL.ListID -> TT.Taskell -> Maybe TTL.ListID) -> TTT.TaskID -> Update
-moveTaskLR getLR taskID taskell = do
+moveTaskLR ::
+       (TTL.ListID -> TT.Taskell -> Maybe TTL.ListID)
+    -> (TTT.TaskID -> TTL.List -> TTL.List)
+    -> TTT.TaskID
+    -> Update
+moveTaskLR getListLR addTaskTB taskID taskell = do
     task <- getTask taskID taskell
     case task ^. TTT.parent of
         TTT.ParentTask _ -> pure taskell
         TTT.ParentList currentListID -> do
-            case getLR currentListID taskell of
+            case getListLR currentListID taskell of
                 Nothing -> pure taskell
                 Just intoID -> do
                     let updatedTask = task & TTT.parent .~ TTT.ParentList intoID
                     let lists = taskell ^. TT.lists
                     let removed = HM.adjust (TTL.removeFromList taskID) currentListID lists
-                    let added = HM.adjust (TTL.addTask taskID) intoID removed
+                    let added = HM.adjust (addTaskTB taskID) intoID removed
                     pure (taskell & TT.lists .~ added & TT.tasks %~ HM.insert taskID updatedTask)
 
 moveTaskLeft :: TTT.TaskID -> Update
-moveTaskLeft = moveTaskLR getListLeft
+moveTaskLeft = moveTaskLR getListLeft TTL.addTask
 
 moveTaskRight :: TTT.TaskID -> Update
-moveTaskRight = moveTaskLR getListRight
+moveTaskRight = moveTaskLR getListRight TTL.addTask
+
+moveTaskLeftTop :: TTT.TaskID -> Update
+moveTaskLeftTop = moveTaskLR getListLeft TTL.addTaskTop
+
+moveTaskRightTop :: TTT.TaskID -> Update
+moveTaskRightTop = moveTaskLR getListRight TTL.addTaskTop
 
 -- removing tasks
 removeChildren :: TTT.TaskID -> Update

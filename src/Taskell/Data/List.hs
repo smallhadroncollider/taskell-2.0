@@ -8,6 +8,7 @@ module Taskell.Data.List
     , rename
     , new
     , addTask
+    , addTaskTop
     ) where
 
 import RIO
@@ -24,6 +25,9 @@ rename text = title .~ text
 
 addTask :: TaskID -> Update
 addTask taskID list = list & tasks %~ (<> [taskID])
+
+addTaskTop :: TaskID -> Update
+addTaskTop taskID list = list & tasks %~ ([taskID] <>)
 
 new :: Text -> List
 new newTitle = List newTitle []

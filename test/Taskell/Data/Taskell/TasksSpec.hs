@@ -83,6 +83,32 @@ spec = do
                          ])
             it "moves right (to bottom) - no change" $
                 moveTaskRight (TaskID 1) testData `shouldBe` Right testData
+            it "moves left (to top)" $
+                moveTaskLeftTop (TaskID 1) testData `shouldBe`
+                Right
+                    (testData &
+                     Taskell.tasks %~
+                     HM.insert (TaskID 1) (task1 & T.parent .~ ParentList (ListID 2)) &
+                     Taskell.lists .~
+                     HM.fromList
+                         [ (ListID 1, list1 & L.tasks .~ (TaskID <$> [5, 3]))
+                         , (ListID 2, list2 & L.tasks .~ (TaskID <$> [1, 2, 4]))
+                         ])
+            it "moves left (to top) - no change" $
+                moveTaskLeftTop (TaskID 2) testData `shouldBe` Right testData
+            it "moves right (to top)" $
+                moveTaskRightTop (TaskID 2) testData `shouldBe`
+                Right
+                    (testData &
+                     Taskell.tasks %~
+                     HM.insert (TaskID 2) (task2 & T.parent .~ ParentList (ListID 1)) &
+                     Taskell.lists .~
+                     HM.fromList
+                         [ (ListID 1, list1 & L.tasks .~ (TaskID <$> [2, 1, 5, 3]))
+                         , (ListID 2, list2 & L.tasks .~ (TaskID <$> [4]))
+                         ])
+            it "moves right (to top) - no change" $
+                moveTaskRightTop (TaskID 1) testData `shouldBe` Right testData
         describe "changes task description" $ do
             it "change description" $
                 changeTaskDescription "Blah" (TaskID 1) testData `shouldBe`
