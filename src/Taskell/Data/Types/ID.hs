@@ -9,11 +9,14 @@ module Taskell.Data.Types.ID
     , TagIDs
     , moveLeft
     , moveRight
+    , getToLeft
+    , getToRight
     ) where
 
-import Data.Hashable (hashWithSalt)
 import RIO
-import qualified RIO.List as L (span, splitAt)
+import qualified RIO.List as L
+
+import Data.Hashable (hashWithSalt)
 
 type ID = Int
 
@@ -71,3 +74,13 @@ moveRight item list = prefix <> before <> value <> suffix
     (prefix, rest) = L.span (/= item) list
     (value, after) = L.splitAt 1 rest
     (before, suffix) = L.splitAt 1 after
+
+getToLeft :: Eq a => a -> [a] -> Maybe a
+getToLeft item list = do
+    let (left, _) = break (== item) list
+    L.lastMaybe left
+
+getToRight :: Eq a => a -> [a] -> Maybe a
+getToRight item list = do
+    let (_, items) = break (== item) list
+    L.headMaybe =<< L.tailMaybe items

@@ -14,6 +14,10 @@ import Taskell.Data.Taskell
     , getLists
     , moveListLeft
     , moveListRight
+    , moveTaskDown
+    , moveTaskLeft
+    , moveTaskRight
+    , moveTaskUp
     , removeTasks
     , tasksForList
     , tasksForTask
@@ -138,5 +142,16 @@ main =
               , bench "existing list - some relationships" $ whnf (removeTasks (TaskID 8)) benchData
               , bench "existing list - many relationships" $ whnf (removeTasks (TaskID 1)) benchData
               , bench "non-existing list" $ whnf (removeTasks (TaskID 50)) benchData
+              ]
+        , bgroup
+              "moveTasks"
+              [ bench "move left - change" $ whnf (moveTaskLeft (TaskID 1)) benchData
+              , bench "move left - no change" $ whnf (moveTaskLeft (TaskID 2)) benchData
+              , bench "move right - change" $ whnf (moveTaskRight (TaskID 2)) benchData
+              , bench "move right - no change" $ whnf (moveTaskRight (TaskID 1)) benchData
+              , bench "move up - change" $ whnf (moveTaskUp (TaskID 3)) benchData
+              , bench "move up - no change" $ whnf (moveTaskUp (TaskID 1)) benchData
+              , bench "move down - change" $ whnf (moveTaskDown (TaskID 1)) benchData
+              , bench "move down - no change" $ whnf (moveTaskDown (TaskID 3)) benchData
               ]
         ]

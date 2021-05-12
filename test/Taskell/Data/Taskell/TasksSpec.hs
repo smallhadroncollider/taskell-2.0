@@ -10,26 +10,8 @@ import Test.Hspec
 import Taskell.Data.TestData
 
 import Taskell.Data.Taskell
-    ( Taskell(..)
-    , addTaskToList
-    , changeTaskDescription
-    , e
-    , moveTaskDown
-    , moveTaskUp
-    , removeTasks
-    , renameTask
-    , tasksForTask
-    )
-import Taskell.Data.Types.List as L (ListID(..), tasks)
+import Taskell.Data.Types.List as L
 import Taskell.Data.Types.Task as T
-    ( Parent(..)
-    , Task(..)
-    , TaskID(..)
-    , description
-    , related
-    , tasks
-    , title
-    )
 import qualified Taskell.Data.Types.Taskell as Taskell
 
 -- tests
@@ -75,6 +57,32 @@ spec = do
                     (testData &
                      Taskell.lists %~
                      HM.insert (ListID 1) (list1 & L.tasks .~ (TaskID <$> [5, 1, 3])))
+            it "moves left (to bottom)" $
+                moveTaskLeft (TaskID 1) testData `shouldBe`
+                Right
+                    (testData &
+                     Taskell.tasks %~
+                     HM.insert (TaskID 1) (task1 & T.parent .~ ParentList (ListID 2)) &
+                     Taskell.lists .~
+                     HM.fromList
+                         [ (ListID 1, list1 & L.tasks .~ (TaskID <$> [5, 3]))
+                         , (ListID 2, list2 & L.tasks .~ (TaskID <$> [2, 4, 1]))
+                         ])
+            it "moves left (to bottom) - no change" $
+                moveTaskLeft (TaskID 2) testData `shouldBe` Right testData
+            it "moves right (to bottom)" $
+                moveTaskRight (TaskID 2) testData `shouldBe`
+                Right
+                    (testData &
+                     Taskell.tasks %~
+                     HM.insert (TaskID 2) (task2 & T.parent .~ ParentList (ListID 1)) &
+                     Taskell.lists .~
+                     HM.fromList
+                         [ (ListID 1, list1 & L.tasks .~ (TaskID <$> [1, 5, 3, 2]))
+                         , (ListID 2, list2 & L.tasks .~ (TaskID <$> [4]))
+                         ])
+            it "moves right (to bottom) - no change" $
+                moveTaskRight (TaskID 1) testData `shouldBe` Right testData
         describe "changes task description" $ do
             it "change description" $
                 changeTaskDescription "Blah" (TaskID 1) testData `shouldBe`

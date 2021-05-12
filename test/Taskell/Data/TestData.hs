@@ -8,7 +8,7 @@ import Taskell.Data.Types.Contributor (Contributor(..), ContributorID(..), Contr
 import Taskell.Data.Types.List as L (List(..), ListID(..), ListIDs, Lists)
 import Taskell.Data.Types.Task as T (Parent(..), Task(..), TaskID(..), Tasks)
 
--- test data
+-- contributors
 contributor1, contributor2, contributor3 :: Contributor
 contributor1 = Contributor "Bob" "bob@bob.com"
 
@@ -24,17 +24,7 @@ allContributors =
         , (ContributorID 3, contributor3)
         ]
 
-list1, list2 :: List
-list1 = List "First List" (TaskID <$> [1, 5, 3])
-
-list2 = List "Second List" (TaskID <$> [2, 4])
-
-allLists :: Lists
-allLists = HM.fromList [(ListID 1, list1), (ListID 2, list2)]
-
-allListsOrder :: ListIDs
-allListsOrder = [ListID 2, ListID 1]
-
+-- tasks
 task1, task2, task3, task4, task5, task6, task7, task8 :: Task
 task1 =
     Task
@@ -98,5 +88,18 @@ allTasks =
         , (TaskID 8, task8)
         ]
 
+-- lists
+list1, list2 :: List
+list1 = List "First List" (TaskID <$> [1, 5, 3])
+
+list2 = List "Second List" (TaskID <$> [2, 4])
+
+allLists :: Lists
+allLists = HM.fromList [(ListID 1, list1), (ListID 2, list2)]
+
+allListsOrder :: ListIDs
+allListsOrder = [ListID 2, ListID 1]
+
+-- full
 testData :: Taskell
 testData = Taskell "Test" "Some test data" allContributors allLists [ListID 2, ListID 1] allTasks

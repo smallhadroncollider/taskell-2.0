@@ -17,6 +17,8 @@ module Taskell.Data.Taskell
     , changeTaskDescription
     , moveTaskUp
     , moveTaskDown
+    , moveTaskLeft
+    , moveTaskRight
     ) where
 
 import RIO
@@ -76,6 +78,16 @@ removeList :: TTL.ListID -> Update
 removeList listID taskell =
     pure (taskell & TT.lists %~ HM.delete listID & TT.listsOrder %~ filter (/= listID))
 
+getListLeft :: TTL.ListID -> TT.Taskell -> Maybe TTL.ListID
+getListLeft listID taskell = do
+    let list = taskell ^. TT.listsOrder
+    ID.getToLeft listID list
+
+getListRight :: TTL.ListID -> TT.Taskell -> Maybe TTL.ListID
+getListRight listID taskell = do
+    let list = taskell ^. TT.listsOrder
+    ID.getToRight listID list
+
 -- getting tasks
 updateTask :: TTT.Update -> TTT.TaskID -> Update
 updateTask fn taskID taskell = do
@@ -120,6 +132,27 @@ moveTaskDown taskID taskell = do
         TTT.ParentTask parentID -> updateTask (TTT.moveDown taskID) parentID taskell
         TTT.ParentList parentID -> updateList (TTT.moveDown taskID) parentID taskell
 
+moveTaskLR :: (TTL.ListID -> TT.Taskell -> Maybe TTL.ListID) -> TTT.TaskID -> Update
+moveTaskLR getLR taskID taskell = do
+    task <- getTask taskID taskell
+    case task ^. TTT.parent of
+        TTT.ParentTask _ -> pure taskell
+        TTT.ParentList currentListID -> do
+            case getLR currentListID taskell of
+                Nothing -> pure taskell
+                Just intoID -> do
+                    let updatedTask = task & TTT.parent .~ TTT.ParentList intoID
+                    let lists = taskell ^. TT.lists
+                    let removed = HM.adjust (TTL.removeFromList taskID) currentListID lists
+                    let added = HM.adjust (TTL.addTask taskID) intoID removed
+                    pure (taskell & TT.lists .~ added & TT.tasks %~ HM.insert taskID updatedTask)
+
+moveTaskLeft :: TTT.TaskID -> Update
+moveTaskLeft = moveTaskLR getListLeft
+
+moveTaskRight :: TTT.TaskID -> Update
+moveTaskRight = moveTaskLR getListRight
+
 -- removing tasks
 removeChildren :: TTT.TaskID -> Update
 removeChildren taskID taskell = do
@@ -136,10 +169,11 @@ removeFromTasks taskID taskell = do
 removeFromLists :: TTT.TaskID -> Update
 removeFromLists taskID taskell = do
     task <- getTask taskID taskell
-    case task ^. TTT.parent of
-        TTT.ParentList listID ->
-            pure (taskell & TT.lists %~ HM.adjust (TTL.removeFromList taskID) listID)
-        _ -> pure taskell
+    pure $
+        case task ^. TTT.parent of
+            TTT.ParentList listID ->
+                (taskell & TT.lists %~ HM.adjust (TTL.removeFromList taskID) listID)
+            _ -> taskell
 
 removeTasks :: TTT.TaskID -> Update
 removeTasks taskID taskell = removeFromLists taskID taskell >>= removeFromTasks taskID
