@@ -10,7 +10,7 @@ import Taskell.Data.TestData
 import Taskell.Data.Types.List as L (List (..), ListID (..), title)
 import Taskell.Data.Types.Taskell (listsOrder)
 
-import Taskell.Data.Taskell (Taskell (..), removeList, tasksForList, getLists, moveListLeft, moveListRight, renameList, addList)
+import Taskell.Data.Taskell (Taskell (..), removeList, tasksForList, getLists, moveListLeft, moveListRight, renameList, addList, e)
 
 
 -- tests
@@ -20,7 +20,7 @@ spec = do
         it "gets lists" $ getLists testData `shouldBe` [list2, list1]
 
         describe "adds lists" $ do
-            it "list 3" $ addList "Third List" (ListID 3) testData `shouldBe` Taskell
+            it "list 3" $ addList "Third List" (ListID 3) testData `shouldBe` Right (Taskell
                 "Test"
                 "Some test data"
                 allContributors
@@ -30,10 +30,10 @@ spec = do
                 ,   (ListID 3, List "Third List" [])
                 ])
                 [ListID 2, ListID 1, ListID 3]
-                allTasks
+                allTasks)
 
         describe "removes lists" $ do
-            it "list 1" $ removeList (ListID 1) testData `shouldBe` Taskell
+            it "list 1" $ removeList (ListID 1) testData `shouldBe` Right (Taskell
                 "Test"
                 "Some test data"
                 allContributors
@@ -41,16 +41,16 @@ spec = do
                     (ListID 2, list2)
                 ])
                 [ListID 2]
-                allTasks
+                allTasks)
 
         describe "reorders lists" $ do
-            it "list 1 left" $ moveListLeft (ListID 1) testData `shouldBe` (testData & listsOrder .~ [ListID 1, ListID 2])
-            it "list 2 left" $ moveListLeft (ListID 2) testData `shouldBe` (testData & listsOrder .~ [ListID 2, ListID 1])
-            it "list 1 right" $ moveListRight (ListID 1) testData `shouldBe` (testData & listsOrder .~ [ListID 2, ListID 1])
-            it "list 2 right" $ moveListRight (ListID 2) testData `shouldBe` (testData & listsOrder .~ [ListID 1, ListID 2])
+            it "list 1 left" $ moveListLeft (ListID 1) testData `shouldBe` Right (testData & listsOrder .~ [ListID 1, ListID 2])
+            it "list 2 left" $ moveListLeft (ListID 2) testData `shouldBe` Right (testData & listsOrder .~ [ListID 2, ListID 1])
+            it "list 1 right" $ moveListRight (ListID 1) testData `shouldBe` Right (testData & listsOrder .~ [ListID 2, ListID 1])
+            it "list 2 right" $ moveListRight (ListID 2) testData `shouldBe` Right (testData & listsOrder .~ [ListID 1, ListID 2])
 
         describe "renames lists" $ do
-            it "list 1" $ renameList "List 1 Changed" (ListID 1) testData `shouldBe` Taskell
+            it "list 1" $ renameList "List 1 Changed" (ListID 1) testData `shouldBe` Right (Taskell
                 "Test"
                 "Some test data"
                 allContributors
@@ -59,10 +59,10 @@ spec = do
                 ,   (ListID 2, list2)
                 ])
                 [ListID 2, ListID 1]
-                allTasks
+                allTasks)
 
         describe "gets tasks for lists" $ do
-            it "list 1" $ tasksForList (ListID 1) testData `shouldBe` [task1, task5, task3]
-            it "list 2" $ tasksForList (ListID 2) testData `shouldBe` [task2, task4]
-            it "no list" $ tasksForList (ListID 3) testData `shouldBe` []
+            it "list 1" $ tasksForList (ListID 1) testData `shouldBe` Right [task1, task5, task3]
+            it "list 2" $ tasksForList (ListID 2) testData `shouldBe` Right [task2, task4]
+            it "no list" $ tasksForList (ListID 3) testData `shouldBe` e "Unknown reference: ListID 3"
 

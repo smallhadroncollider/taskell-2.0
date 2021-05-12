@@ -10,9 +10,6 @@ module Taskell.Data.Task (
 ,   new
 ,   removeFromTask
 ,   belongsToTask
-,   parentList
-,   parentTask
-,   parentIsList
 ,   rename
 ,   changeDescription
 
@@ -20,7 +17,6 @@ module Taskell.Data.Task (
 
 import RIO
 
-import Taskell.Data.Types.List (ListID)
 import Taskell.Data.Types.Task
 
 new :: Text -> Parent -> Task
@@ -38,24 +34,6 @@ belongsToTask taskID task =
     case task ^. parent of
         ParentTask parentID -> taskID == parentID
         _ -> False
-
-parentIsList :: Task -> Bool
-parentIsList task =
-    case task ^. parent of
-        ParentList _ -> True
-        _ -> False
-
-parentTask :: Task -> Maybe TaskID
-parentTask task =
-    case task ^. parent of
-        ParentTask parentID -> Just parentID
-        _ -> Nothing
-
-parentList :: Task -> Maybe ListID
-parentList task =
-    case task ^. parent of
-        ParentList parentID -> Just parentID
-        _ -> Nothing
 
 
 -- removing tasks from tasks

@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -Wno-unused-top-binds #-}
+
 {-# LANGUAGE TemplateHaskell #-}
 module Taskell.Data.Types.Task (
     HasTasks (..)
