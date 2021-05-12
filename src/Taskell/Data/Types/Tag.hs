@@ -1,27 +1,25 @@
-{-# OPTIONS_GHC -Wno-unused-top-binds #-}
-
 {-# LANGUAGE TemplateHaskell #-}
-module Taskell.Data.Types.Tag (
 
-    Tag (..)
-,   Tags
-,   TagID (..)
-,   TagIDs
-
-,   tasks
-
-) where
+module Taskell.Data.Types.Tag
+    ( Tag(..)
+    , Tags
+    , TagID(..)
+    , TagIDs
+    , tasks
+    ) where
 
 import RIO
 
 import Lens.Micro.TH (makeLenses)
 
-import Taskell.Data.Types.ID (TagID (..), TagIDs, TaskIDs)
+import Taskell.Data.Types.ID (TagID(..), TagIDs, TaskIDs)
 
-data Tag = Tag {
-        _name         :: !Text
-    ,   _tasks        :: !TaskIDs
-    } deriving (Eq, Show)
+data Tag =
+    Tag
+        { _name :: !Text
+        , _tasks :: !TaskIDs
+        }
+    deriving (Eq, Show)
 
 makeLenses ''Tag
 

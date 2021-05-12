@@ -1,22 +1,19 @@
-module Taskell.Data.List (
-
-    List (..)
-,   Lists
-,   ListID (..)
-,   ListIDs
-
-,   tasks
-,   removeFromList
-,   rename
-,   new
-,   addTask
-
-) where
+module Taskell.Data.List
+    ( List(..)
+    , Lists
+    , ListID(..)
+    , ListIDs
+    , tasks
+    , removeFromList
+    , rename
+    , new
+    , addTask
+    ) where
 
 import RIO
 
-import Taskell.Data.Types.List
 import Taskell.Data.Task (TaskID)
+import Taskell.Data.Types.List
 
 -- removing tasks from lists
 removeFromList :: TaskID -> Update

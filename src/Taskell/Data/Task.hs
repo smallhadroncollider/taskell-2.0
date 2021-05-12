@@ -1,19 +1,16 @@
-module Taskell.Data.Task (
-
-    Task (..)
-,   Tasks
-,   TaskID (..)
-,   TaskIDs
-,   Parent (..)
-
-,   tasks
-,   new
-,   removeFromTask
-,   belongsToTask
-,   rename
-,   changeDescription
-
-) where
+module Taskell.Data.Task
+    ( Task(..)
+    , Tasks
+    , TaskID(..)
+    , TaskIDs
+    , Parent(..)
+    , tasks
+    , new
+    , removeFromTask
+    , belongsToTask
+    , rename
+    , changeDescription
+    ) where
 
 import RIO
 
@@ -34,7 +31,6 @@ belongsToTask taskID task =
     case task ^. parent of
         ParentTask parentID -> taskID == parentID
         _ -> False
-
 
 -- removing tasks from tasks
 removeFromSubTasks :: TaskID -> Update

@@ -1,38 +1,37 @@
-module Taskell.Data.Taskell (
-
-    TT.Taskell (..)
-,   e
-
-,   removeTasks
-,   tasksForList
-,   tasksForTask
-,   getLists
-,   moveListLeft
-,   moveListRight
-,   renameList
-,   rename
-,   changeDescription
-,   removeList
-,   addList
-,   addTaskToList
-,   renameTask
-,   changeTaskDescription
-,   moveTaskUp
-,   moveTaskDown
-
-) where
+module Taskell.Data.Taskell
+    ( TT.Taskell(..)
+    , e
+    , removeTasks
+    , tasksForList
+    , tasksForTask
+    , getLists
+    , moveListLeft
+    , moveListRight
+    , renameList
+    , rename
+    , changeDescription
+    , removeList
+    , addList
+    , addTaskToList
+    , renameTask
+    , changeTaskDescription
+    , moveTaskUp
+    , moveTaskDown
+    ) where
 
 import RIO
-import qualified RIO.HashMap as HM (delete, lookup, adjust, insert)
+import qualified RIO.HashMap as HM (adjust, delete, insert, lookup)
 
-import qualified Taskell.Data.Types.ID as ID
-import qualified Taskell.Data.Types.Taskell as TT
-import qualified Taskell.Data.Types.List as TTL
 import qualified Taskell.Data.List as TTL
-import qualified Taskell.Data.Types.Task as TTT
 import qualified Taskell.Data.Task as TTT
+import qualified Taskell.Data.Types.ID as ID
+import qualified Taskell.Data.Types.List as TTL
+import qualified Taskell.Data.Types.Task as TTT
+import qualified Taskell.Data.Types.Taskell as TT
 
-newtype Error = Error Text deriving (Show, Eq)
+newtype Error =
+    Error Text
+    deriving (Show, Eq)
 
 e :: Text -> Either Error a
 e text = Left (Error text)
@@ -41,15 +40,17 @@ mEither :: Text -> Maybe a -> Either Error a
 mEither text = maybe (e text) pure
 
 type Result a = Either Error a
+
 type Update = TT.Taskell -> Result TT.Taskell
 
 -- getting lists
 getList :: TTL.ListID -> TT.Taskell -> Result TTL.List
-getList listID taskell = mEither ("Unknown reference: " <> tshow listID)  (HM.lookup listID (taskell ^. TT.lists))
+getList listID taskell =
+    mEither ("Unknown reference: " <> tshow listID) (HM.lookup listID (taskell ^. TT.lists))
 
 getLists :: TT.Taskell -> [TTL.List]
-getLists taskell = fromMaybe [] $
-    traverse (`HM.lookup` (taskell ^. TT.lists)) (taskell ^. TT.listsOrder)
+getLists taskell =
+    fromMaybe [] $ traverse (`HM.lookup` (taskell ^. TT.lists)) (taskell ^. TT.listsOrder)
 
 -- reordering lists
 moveListLeft :: TTL.ListID -> Update
@@ -57,7 +58,6 @@ moveListLeft listID taskell = pure (taskell & TT.listsOrder %~ ID.moveLeft listI
 
 moveListRight :: TTL.ListID -> Update
 moveListRight listID taskell = pure (taskell & TT.listsOrder %~ ID.moveRight listID)
-
 
 -- working with lists
 updateList :: TTL.Update -> TTL.ListID -> Update
@@ -69,20 +69,12 @@ renameList :: Text -> TTL.ListID -> Update
 renameList title = updateList (TTL.rename title)
 
 addList :: Text -> TTL.ListID -> Update
-addList title listID taskell = pure (
-    taskell
-        & TT.lists %~ HM.insert listID (TTL.new title)
-        & TT.listsOrder %~ (<> [listID])
-    )
+addList title listID taskell =
+    pure (taskell & TT.lists %~ HM.insert listID (TTL.new title) & TT.listsOrder %~ (<> [listID]))
 
 removeList :: TTL.ListID -> Update
-removeList listID taskell = pure (
-    taskell
-        & TT.lists %~ HM.delete listID
-        & TT.listsOrder %~ filter (/= listID)
-    )
-
-
+removeList listID taskell =
+    pure (taskell & TT.lists %~ HM.delete listID & TT.listsOrder %~ filter (/= listID))
 
 -- getting tasks
 updateTask :: TTT.Update -> TTT.TaskID -> Update
@@ -100,7 +92,8 @@ tasksForTask :: TTT.TaskID -> TT.Taskell -> Result [TTT.Task]
 tasksForTask taskID taskell = getTask taskID taskell >>= taskIDsToTasks taskell . (^. TTT.tasks)
 
 getTask :: TTT.TaskID -> TT.Taskell -> Either Error TTT.Task
-getTask taskID taskell = mEither ("Unknown reference: " <> tshow taskID)  (HM.lookup taskID (taskell ^. TT.tasks))
+getTask taskID taskell =
+    mEither ("Unknown reference: " <> tshow taskID) (HM.lookup taskID (taskell ^. TT.tasks))
 
 addTaskToList :: Text -> TTT.TaskID -> TTL.ListID -> Update
 addTaskToList title taskID listID taskell = do
@@ -127,7 +120,6 @@ moveTaskDown taskID taskell = do
         TTT.ParentTask parentID -> updateTask (TTT.moveDown taskID) parentID taskell
         TTT.ParentList parentID -> updateList (TTT.moveDown taskID) parentID taskell
 
-
 -- removing tasks
 removeChildren :: TTT.TaskID -> Update
 removeChildren taskID taskell = do
@@ -145,7 +137,8 @@ removeFromLists :: TTT.TaskID -> Update
 removeFromLists taskID taskell = do
     task <- getTask taskID taskell
     case task ^. TTT.parent of
-        TTT.ParentList listID -> pure (taskell & TT.lists %~ HM.adjust (TTL.removeFromList taskID) listID)
+        TTT.ParentList listID ->
+            pure (taskell & TT.lists %~ HM.adjust (TTL.removeFromList taskID) listID)
         _ -> pure taskell
 
 removeTasks :: TTT.TaskID -> Update
