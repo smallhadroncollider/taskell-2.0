@@ -28,7 +28,7 @@ import Taskell.Data.Taskell
 spec :: Spec
 spec = do
     describe "Taskell Lists" $ do
-        it "gets lists" $ getLists testData `shouldBe` [list2, list1]
+        it "gets lists" $ getLists testData `shouldBe` Right [list2, list1]
         describe "adds lists" $ do
             it "list 3" $
                 addList "Third List" (ListID 3) testData `shouldBe`

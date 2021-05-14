@@ -43,18 +43,17 @@ e text = Left (Error text)
 mEither :: Text -> Maybe a -> Either Error a
 mEither text = maybe (e text) pure
 
-type Result a = Either Error a
+type Result a = TT.Taskell -> Either Error a
 
-type Update = TT.Taskell -> Result TT.Taskell
+type Update = Result TT.Taskell
 
 -- getting lists
-getList :: TTL.ListID -> TT.Taskell -> Result TTL.List
+getList :: TTL.ListID -> Result TTL.List
 getList listID taskell =
     mEither ("Unknown reference: " <> tshow listID) (HM.lookup listID (taskell ^. TT.lists))
 
-getLists :: TT.Taskell -> [TTL.List]
-getLists taskell =
-    fromMaybe [] $ traverse (`HM.lookup` (taskell ^. TT.lists)) (taskell ^. TT.listsOrder)
+getLists :: Result [TTL.List]
+getLists taskell = traverse (`getList` taskell) (taskell ^. TT.listsOrder)
 
 -- reordering lists
 moveListLeft :: TTL.ListID -> Update
@@ -65,9 +64,7 @@ moveListRight listID taskell = pure (taskell & TT.listsOrder %~ ID.moveRight lis
 
 -- working with lists
 updateList :: TTL.Update -> TTL.ListID -> Update
-updateList fn listID taskell = do
-    list <- fn <$> getList listID taskell
-    pure (taskell & TT.lists %~ HM.insert listID list)
+updateList fn listID taskell = pure (taskell & TT.lists %~ HM.adjust fn listID)
 
 renameList :: Text -> TTL.ListID -> Update
 renameList title = updateList (TTL.rename title)
@@ -81,38 +78,38 @@ removeList listID taskell =
     pure (taskell & TT.lists %~ HM.delete listID & TT.listsOrder %~ filter (/= listID))
 
 getListLeft :: TTL.ListID -> TT.Taskell -> Maybe TTL.ListID
-getListLeft listID taskell = do
-    let list = taskell ^. TT.listsOrder
-    ID.getToLeft listID list
+getListLeft listID = ID.getToLeft listID . (^. TT.listsOrder)
 
 getListRight :: TTL.ListID -> TT.Taskell -> Maybe TTL.ListID
-getListRight listID taskell = do
-    let list = taskell ^. TT.listsOrder
-    ID.getToRight listID list
+getListRight listID = ID.getToRight listID . (^. TT.listsOrder)
 
 -- getting tasks
+updateTasks :: (TTT.Tasks -> TTT.Tasks) -> Update
+updateTasks fn taskell = pure (taskell & TT.tasks %~ fn)
+
 updateTask :: TTT.Update -> TTT.TaskID -> Update
-updateTask fn taskID taskell = do
-    task <- fn <$> getTask taskID taskell
-    pure (taskell & TT.tasks %~ HM.insert taskID task)
+updateTask fn taskID = updateTasks (HM.adjust fn taskID)
 
-taskIDsToTasks :: TT.Taskell -> TTT.TaskIDs -> Result [TTT.Task]
-taskIDsToTasks taskell = traverse (`getTask` taskell)
+addTask :: TTT.Task -> TTT.TaskID -> Update
+addTask task taskID = updateTasks (HM.insert taskID task)
 
-tasksForList :: TTL.ListID -> TT.Taskell -> Result [TTT.Task]
-tasksForList listID taskell = getList listID taskell >>= taskIDsToTasks taskell . (^. TTL.tasks)
+taskIDsToTasks :: TTT.TaskIDs -> Result [TTT.Task]
+taskIDsToTasks taskIDs taskell = traverse (`getTask` taskell) taskIDs
 
-tasksForTask :: TTT.TaskID -> TT.Taskell -> Result [TTT.Task]
-tasksForTask taskID taskell = getTask taskID taskell >>= taskIDsToTasks taskell . (^. TTT.tasks)
+tasksForList :: TTL.ListID -> Result [TTT.Task]
+tasksForList listID taskell = getList listID taskell >>= (`taskIDsToTasks` taskell) . (^. TTL.tasks)
+
+tasksForTask :: TTT.TaskID -> Result [TTT.Task]
+tasksForTask taskID taskell = getTask taskID taskell >>= (`taskIDsToTasks` taskell) . (^. TTT.tasks)
 
 getTask :: TTT.TaskID -> TT.Taskell -> Either Error TTT.Task
 getTask taskID taskell =
     mEither ("Unknown reference: " <> tshow taskID) (HM.lookup taskID (taskell ^. TT.tasks))
 
 addTaskToList :: Text -> TTT.TaskID -> TTL.ListID -> Update
-addTaskToList title taskID listID taskell = do
-    updated <- updateList (TTL.addTask taskID) listID taskell
-    pure (updated & TT.tasks %~ HM.insert taskID (TTT.new title (TTT.ParentList listID)))
+addTaskToList title taskID listID taskell =
+    addTask (TTT.new title (TTT.ParentList listID)) taskID taskell >>=
+    updateList (TTL.addTask taskID) listID
 
 renameTask :: Text -> TTT.TaskID -> Update
 renameTask title = updateTask (TTT.rename title)
@@ -146,12 +143,10 @@ moveTaskLR getListLR addTaskTB taskID taskell = do
         TTT.ParentList currentListID -> do
             case getListLR currentListID taskell of
                 Nothing -> pure taskell
-                Just intoID -> do
-                    let updatedTask = task & TTT.parent .~ TTT.ParentList intoID
-                    let lists = taskell ^. TT.lists
-                    let removed = HM.adjust (TTL.removeFromList taskID) currentListID lists
-                    let added = HM.adjust (addTaskTB taskID) intoID removed
-                    pure (taskell & TT.lists .~ added & TT.tasks %~ HM.insert taskID updatedTask)
+                Just intoID ->
+                    updateList (TTL.removeFromList taskID) currentListID taskell >>=
+                    updateList (addTaskTB taskID) intoID >>=
+                    updateTask (TTT.setParentList intoID) taskID
 
 moveTaskLeft :: TTT.TaskID -> Update
 moveTaskLeft = moveTaskLR getListLeft TTL.addTask
@@ -181,11 +176,9 @@ removeFromTasks taskID taskell = do
 removeFromLists :: TTT.TaskID -> Update
 removeFromLists taskID taskell = do
     task <- getTask taskID taskell
-    pure $
-        case task ^. TTT.parent of
-            TTT.ParentList listID ->
-                (taskell & TT.lists %~ HM.adjust (TTL.removeFromList taskID) listID)
-            _ -> taskell
+    case task ^. TTT.parent of
+        TTT.ParentList listID -> updateList (TTL.removeFromList taskID) listID taskell
+        _ -> pure taskell
 
 removeTasks :: TTT.TaskID -> Update
 removeTasks taskID taskell = removeFromLists taskID taskell >>= removeFromTasks taskID

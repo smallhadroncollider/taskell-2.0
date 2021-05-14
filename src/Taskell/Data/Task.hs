@@ -10,10 +10,13 @@ module Taskell.Data.Task
     , belongsToTask
     , rename
     , changeDescription
+    , setParentList
+    , setParentTask
     ) where
 
 import RIO
 
+import Taskell.Data.Types.List (ListID)
 import Taskell.Data.Types.Task
 
 new :: Text -> Parent -> Task
@@ -31,6 +34,12 @@ belongsToTask taskID task =
     case task ^. parent of
         ParentTask parentID -> taskID == parentID
         _ -> False
+
+setParentList :: ListID -> Update
+setParentList listID = parent .~ ParentList listID
+
+setParentTask :: TaskID -> Update
+setParentTask taskID = parent .~ ParentTask taskID
 
 -- removing tasks from tasks
 removeFromSubTasks :: TaskID -> Update
