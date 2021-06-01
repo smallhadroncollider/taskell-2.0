@@ -1,7 +1,8 @@
 module Taskell.Data.TestData where
 
 import RIO
-import qualified RIO.HashMap as HM (fromList)
+import qualified RIO.HashMap as HM
+import qualified RIO.Seq as Seq
 
 import Taskell.Data.Taskell (Taskell(..))
 import Taskell.Data.Types.Contributor (Contributor(..), ContributorID(..), Contributors)
@@ -31,49 +32,80 @@ task1 =
         "First Task"
         (ParentList (ListID 1))
         "Do first thing"
-        (TaskID <$> [6])
-        (TaskID <$> [5])
-        (ContributorID <$> [1, 2])
-        []
+        (TaskID <$> Seq.fromList [6])
+        (TaskID <$> Seq.fromList [5])
+        (ContributorID <$> Seq.fromList [1, 2])
+        Seq.empty
 
 task2 =
     Task
         "Second Task"
         (ParentList (ListID 2))
         "Do second thing"
-        []
-        (TaskID <$> [3, 1])
-        (ContributorID <$> [1])
-        []
+        Seq.empty
+        (TaskID <$> Seq.fromList [3, 1])
+        (ContributorID <$> Seq.fromList [1])
+        Seq.empty
 
 task3 =
     Task
         "Third Task"
         (ParentList (ListID 1))
         "Do third thing"
-        []
-        (TaskID <$> [6, 2])
-        (ContributorID <$> [2])
-        []
+        Seq.empty
+        (TaskID <$> Seq.fromList [6, 2])
+        (ContributorID <$> Seq.fromList [2])
+        Seq.empty
 
 task4 =
-    Task "Fourth Task" (ParentList (ListID 2)) "Do fourth thing" [] [] (ContributorID <$> [3]) []
+    Task
+        "Fourth Task"
+        (ParentList (ListID 2))
+        "Do fourth thing"
+        Seq.empty
+        Seq.empty
+        (ContributorID <$> Seq.fromList [3])
+        Seq.empty
 
 task5 =
     Task
         "Fifth Task"
         (ParentList (ListID 1))
         "Do fifth thing"
-        []
-        (TaskID <$> [1])
-        (ContributorID <$> [2])
-        []
+        Seq.empty
+        (TaskID <$> Seq.fromList [1])
+        (ContributorID <$> Seq.fromList [2])
+        Seq.empty
 
-task6 = Task "Sub Task" (ParentTask (TaskID 1)) "Sub task" (TaskID <$> [7]) [] [] []
+task6 =
+    Task
+        "Sub Task"
+        (ParentTask (TaskID 1))
+        "Sub task"
+        (TaskID <$> Seq.fromList [7])
+        Seq.empty
+        Seq.empty
+        Seq.empty
 
-task7 = Task "Sub Sub Task" (ParentTask (TaskID 6)) "Sub sub task" (TaskID <$> [8]) [] [] []
+task7 =
+    Task
+        "Sub Sub Task"
+        (ParentTask (TaskID 6))
+        "Sub sub task"
+        (TaskID <$> Seq.fromList [8])
+        Seq.empty
+        Seq.empty
+        Seq.empty
 
-task8 = Task "Sub Sub Sub Task" (ParentTask (TaskID 7)) "Sub sub sub task" [] [] [] []
+task8 =
+    Task
+        "Sub Sub Sub Task"
+        (ParentTask (TaskID 7))
+        "Sub sub sub task"
+        Seq.empty
+        Seq.empty
+        Seq.empty
+        Seq.empty
 
 allTasks :: Tasks
 allTasks =
@@ -90,16 +122,16 @@ allTasks =
 
 -- lists
 list1, list2 :: List
-list1 = List "First List" (TaskID <$> [1, 5, 3])
+list1 = List "First List" (TaskID <$> Seq.fromList [1, 5, 3])
 
-list2 = List "Second List" (TaskID <$> [2, 4])
+list2 = List "Second List" (TaskID <$> Seq.fromList [2, 4])
 
 allLists :: Lists
 allLists = HM.fromList [(ListID 1, list1), (ListID 2, list2)]
 
 allListsOrder :: ListIDs
-allListsOrder = [ListID 2, ListID 1]
+allListsOrder = Seq.fromList [ListID 2, ListID 1]
 
 -- full
 testData :: Taskell
-testData = Taskell "Test" "Some test data" allContributors allLists [ListID 2, ListID 1] allTasks
+testData = Taskell "Test" "Some test data" allContributors allLists allListsOrder allTasks

@@ -24,7 +24,8 @@ module Taskell.Data.Taskell
     ) where
 
 import RIO
-import qualified RIO.HashMap as HM (adjust, delete, insert, lookup)
+import qualified RIO.HashMap as HM
+import qualified RIO.Seq as Seq
 
 import qualified Taskell.Data.List as TTL
 import qualified Taskell.Data.Task as TTT
@@ -52,7 +53,7 @@ getList :: TTL.ListID -> Result TTL.List
 getList listID taskell =
     mEither ("Unknown reference: " <> tshow listID) (HM.lookup listID (taskell ^. TT.lists))
 
-getLists :: Result [TTL.List]
+getLists :: Result (Seq.Seq TTL.List)
 getLists taskell = traverse (`getList` taskell) (taskell ^. TT.listsOrder)
 
 -- reordering lists
@@ -71,11 +72,13 @@ renameList title = updateList (TTL.rename title)
 
 addList :: Text -> TTL.ListID -> Update
 addList title listID taskell =
-    pure (taskell & TT.lists %~ HM.insert listID (TTL.new title) & TT.listsOrder %~ (<> [listID]))
+    pure
+        (taskell & TT.lists %~ HM.insert listID (TTL.new title) &
+         TT.listsOrder %~ (<> Seq.singleton listID))
 
 removeList :: TTL.ListID -> Update
 removeList listID taskell =
-    pure (taskell & TT.lists %~ HM.delete listID & TT.listsOrder %~ filter (/= listID))
+    pure (taskell & TT.lists %~ HM.delete listID & TT.listsOrder %~ Seq.filter (/= listID))
 
 getListLeft :: TTL.ListID -> TT.Taskell -> Maybe TTL.ListID
 getListLeft listID = ID.getToLeft listID . (^. TT.listsOrder)
@@ -93,13 +96,13 @@ updateTask fn taskID = updateTasks (HM.adjust fn taskID)
 addTask :: TTT.Task -> TTT.TaskID -> Update
 addTask task taskID = updateTasks (HM.insert taskID task)
 
-taskIDsToTasks :: TTT.TaskIDs -> Result [TTT.Task]
+taskIDsToTasks :: TTT.TaskIDs -> Result (Seq.Seq TTT.Task)
 taskIDsToTasks taskIDs taskell = traverse (`getTask` taskell) taskIDs
 
-tasksForList :: TTL.ListID -> Result [TTT.Task]
+tasksForList :: TTL.ListID -> Result (Seq.Seq TTT.Task)
 tasksForList listID taskell = getList listID taskell >>= (`taskIDsToTasks` taskell) . (^. TTL.tasks)
 
-tasksForTask :: TTT.TaskID -> Result [TTT.Task]
+tasksForTask :: TTT.TaskID -> Result (Seq.Seq TTT.Task)
 tasksForTask taskID taskell = getTask taskID taskell >>= (`taskIDsToTasks` taskell) . (^. TTT.tasks)
 
 getTask :: TTT.TaskID -> TT.Taskell -> Either Error TTT.Task

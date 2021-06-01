@@ -14,7 +14,7 @@ module Taskell.Data.Types.ID
     ) where
 
 import RIO
-import qualified RIO.List as L
+import qualified RIO.Seq as Seq
 
 import Data.Hashable (hashWithSalt)
 
@@ -25,7 +25,7 @@ newtype TaskID =
     TaskID ID
     deriving (Eq, Show)
 
-type TaskIDs = [TaskID]
+type TaskIDs = Seq.Seq TaskID
 
 instance Hashable TaskID where
     hashWithSalt a (TaskID b) = hashWithSalt a b
@@ -35,7 +35,7 @@ newtype ListID =
     ListID ID
     deriving (Eq, Show)
 
-type ListIDs = [ListID]
+type ListIDs = Seq.Seq ListID
 
 instance Hashable ListID where
     hashWithSalt a (ListID b) = hashWithSalt a b
@@ -45,7 +45,7 @@ newtype ContributorID =
     ContributorID ID
     deriving (Eq, Show)
 
-type ContributorIDs = [ContributorID]
+type ContributorIDs = Seq.Seq ContributorID
 
 instance Hashable ContributorID where
     hashWithSalt a (ContributorID b) = hashWithSalt a b
@@ -55,32 +55,31 @@ newtype TagID =
     TagID ID
     deriving (Eq, Show)
 
-type TagIDs = [TagID]
+type TagIDs = Seq.Seq TagID
 
 instance Hashable TagID where
     hashWithSalt a (TagID b) = hashWithSalt a b
 
 -- functions
-moveLeft :: Eq a => a -> [a] -> [a]
-moveLeft item list = prefix <> value <> after <> suffix
-  where
-    (before, rest) = L.span (/= item) list
-    (value, suffix) = L.splitAt 1 rest
-    (prefix, after) = L.splitAt (length before - 1) before
+movePos :: Eq a => Int -> a -> Seq.Seq a -> Seq.Seq a
+movePos n item list =
+    case Seq.elemIndexL item list of
+        Nothing -> list
+        Just index -> do
+            let deleted = Seq.deleteAt index list
+            Seq.insertAt (index + n) item deleted
 
-moveRight :: Eq a => a -> [a] -> [a]
-moveRight item list = prefix <> before <> value <> suffix
-  where
-    (prefix, rest) = L.span (/= item) list
-    (value, after) = L.splitAt 1 rest
-    (before, suffix) = L.splitAt 1 after
+moveLeft :: Eq a => a -> Seq.Seq a -> Seq.Seq a
+moveLeft = movePos (-1)
 
-getToLeft :: Eq a => a -> [a] -> Maybe a
-getToLeft item list = do
-    let (left, _) = break (== item) list
-    L.lastMaybe left
+moveRight :: Eq a => a -> Seq.Seq a -> Seq.Seq a
+moveRight = movePos 1
 
-getToRight :: Eq a => a -> [a] -> Maybe a
-getToRight item list = do
-    let (_, items) = break (== item) list
-    L.headMaybe =<< L.tailMaybe items
+getToPos :: Eq a => Int -> a -> Seq.Seq a -> Maybe a
+getToPos n item list = (list Seq.!?) . (+ n) =<< Seq.elemIndexL item list
+
+getToLeft :: Eq a => a -> Seq.Seq a -> Maybe a
+getToLeft = getToPos (-1)
+
+getToRight :: Eq a => a -> Seq.Seq a -> Maybe a
+getToRight = getToPos 1

@@ -8,8 +8,6 @@ import Test.Hspec
 
 import Taskell.Data.TestData
 
-import Taskell.Data.Types.List as L (ListID(..))
-
 import Taskell.Data.Taskell (Taskell(..), changeDescription, rename)
 
 -- tests
@@ -25,7 +23,7 @@ spec = do
                          "Some test data"
                          allContributors
                          allLists
-                         [ListID 2, ListID 1]
+                         allListsOrder
                          allTasks)
         describe "changes description" $ do
             it "changes description" $
@@ -36,5 +34,5 @@ spec = do
                          "Some test data changed"
                          allContributors
                          allLists
-                         [ListID 2, ListID 1]
+                         allListsOrder
                          allTasks)

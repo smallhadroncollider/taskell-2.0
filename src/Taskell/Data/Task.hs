@@ -15,12 +15,13 @@ module Taskell.Data.Task
     ) where
 
 import RIO
+import qualified RIO.Seq as Seq
 
 import Taskell.Data.Types.List (ListID)
 import Taskell.Data.Types.Task
 
 new :: Text -> Parent -> Task
-new newTitle newParent = Task newTitle newParent "" [] [] [] []
+new newTitle newParent = Task newTitle newParent "" Seq.empty Seq.empty Seq.empty Seq.empty
 
 rename :: Text -> Update
 rename newTitle = title .~ newTitle
@@ -43,10 +44,10 @@ setParentTask taskID = parent .~ ParentTask taskID
 
 -- removing tasks from tasks
 removeFromSubTasks :: TaskID -> Update
-removeFromSubTasks taskID = tasks %~ filter (/= taskID)
+removeFromSubTasks taskID = tasks %~ Seq.filter (/= taskID)
 
 removeFromRelated :: TaskID -> Update
-removeFromRelated taskID = related %~ filter (/= taskID)
+removeFromRelated taskID = related %~ Seq.filter (/= taskID)
 
 removeFromTask :: TaskID -> Update
 removeFromTask taskID = removeFromSubTasks taskID . removeFromRelated taskID
