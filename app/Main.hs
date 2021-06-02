@@ -16,8 +16,8 @@ main = do
     (options, ()) <-
         simpleOptions
             $(simpleVersion Paths_taskell2.version)
-            "Header for command line arguments"
-            "Program description, also for command line arguments"
+            "taskell"
+            "A command-line Kanban board"
             (Options <$> switch (long "verbose" <> short 'v' <> help "Verbose output?"))
             empty
     lo <- logOptionsHandle stderr (optionsVerbose options)

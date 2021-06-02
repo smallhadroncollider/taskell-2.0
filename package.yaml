@@ -37,6 +37,7 @@ library:
   dependencies:
   - attoparsec
   - brick
+  - vty
   - hashable
   - microlens-th
 
