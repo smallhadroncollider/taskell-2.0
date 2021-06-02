@@ -35,6 +35,8 @@ default-extensions:
 library:
   source-dirs: src
   dependencies:
+  - attoparsec
+  - brick
   - hashable
   - microlens-th
 
