@@ -1,4 +1,4 @@
-module Taskell.Data.TestData where
+module TmpData where
 
 import RIO
 import qualified RIO.HashMap as HM
@@ -133,5 +133,5 @@ allListsOrder :: ListIDs
 allListsOrder = Seq.fromList [ListID 2, ListID 1]
 
 -- full
-testData :: Taskell
-testData = Taskell "Test" "Some test data" allContributors allLists allListsOrder allTasks
+tmpData :: Taskell
+tmpData = Taskell "Test" "Some test data" allContributors allLists allListsOrder allTasks

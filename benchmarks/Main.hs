@@ -1,14 +1,11 @@
 module Main where
 
 import RIO
-import qualified RIO.HashMap as HM
-import qualified RIO.Seq as Seq
 
 import Criterion.Main (bench, bgroup, defaultMain, whnf)
 
-import Taskell.Data.Types.Contributor (Contributor(..), ContributorID(..), Contributors)
-import Taskell.Data.Types.List as L (List(..), ListID(..), Lists)
-import Taskell.Data.Types.Task as T (Parent(..), Task(..), TaskID(..), Tasks)
+import Taskell.Data.Types.List as L (ListID(..))
+import Taskell.Data.Types.Task as T (TaskID(..))
 
 import Taskell.Data.Taskell
     ( Taskell(..)
@@ -24,133 +21,13 @@ import Taskell.Data.Taskell
     , tasksForTask
     )
 
--- test data
-contributor1, contributor2, contributor3 :: Contributor
-contributor1 = Contributor "Bob" "bob@bob.com"
+import qualified UI.Text.Editor as E
+import qualified UI.Text.Split as S
 
-contributor2 = Contributor "Jim" "jim@jim.com"
-
-contributor3 = Contributor "Jenny" "jenny@jenny.com"
-
-allContributors :: Contributors
-allContributors =
-    HM.fromList
-        [ (ContributorID 1, contributor1)
-        , (ContributorID 2, contributor2)
-        , (ContributorID 3, contributor3)
-        ]
-
-list1, list2 :: List
-list1 = List "First List" (TaskID <$> Seq.fromList [1, 5, 3])
-
-list2 = List "Second List" (TaskID <$> Seq.fromList [2, 4])
-
-allLists :: Lists
-allLists = HM.fromList [(ListID 1, list1), (ListID 2, list2)]
-
-task1, task2, task3, task4, task5, task6, task7, task8 :: Task
-task1 =
-    Task
-        "First Task"
-        (ParentList (ListID 1))
-        "Do first thing"
-        (TaskID <$> Seq.fromList [6])
-        (TaskID <$> Seq.fromList [5])
-        (ContributorID <$> Seq.fromList [1, 2])
-        Seq.empty
-
-task2 =
-    Task
-        "Second Task"
-        (ParentList (ListID 2))
-        "Do second thing"
-        Seq.empty
-        (TaskID <$> Seq.fromList [3, 1])
-        (ContributorID <$> Seq.fromList [1])
-        Seq.empty
-
-task3 =
-    Task
-        "Third Task"
-        (ParentList (ListID 1))
-        "Do third thing"
-        Seq.empty
-        (TaskID <$> Seq.fromList [6, 2])
-        (ContributorID <$> Seq.fromList [2])
-        Seq.empty
-
-task4 =
-    Task
-        "Fourth Task"
-        (ParentList (ListID 2))
-        "Do fourth thing"
-        Seq.empty
-        Seq.empty
-        (ContributorID <$> Seq.fromList [3])
-        Seq.empty
-
-task5 =
-    Task
-        "Fifth Task"
-        (ParentList (ListID 1))
-        "Do fifth thing"
-        Seq.empty
-        (TaskID <$> Seq.fromList [1])
-        (ContributorID <$> Seq.fromList [2])
-        Seq.empty
-
-task6 =
-    Task
-        "Sub Task"
-        (ParentTask (TaskID 1))
-        "Sub task"
-        (TaskID <$> Seq.fromList [7])
-        Seq.empty
-        Seq.empty
-        Seq.empty
-
-task7 =
-    Task
-        "Sub Sub Task"
-        (ParentTask (TaskID 6))
-        "Sub sub task"
-        (TaskID <$> Seq.fromList [8])
-        Seq.empty
-        Seq.empty
-        Seq.empty
-
-task8 =
-    Task
-        "Sub Sub Sub Task"
-        (ParentTask (TaskID 7))
-        "Sub sub sub task"
-        Seq.empty
-        Seq.empty
-        Seq.empty
-        Seq.empty
-
-allTasks :: Tasks
-allTasks =
-    HM.fromList
-        [ (TaskID 1, task1)
-        , (TaskID 2, task2)
-        , (TaskID 3, task3)
-        , (TaskID 4, task4)
-        , (TaskID 5, task5)
-        , (TaskID 6, task6)
-        , (TaskID 7, task7)
-        , (TaskID 8, task8)
-        ]
+import TmpData (tmpData)
 
 benchData :: Taskell
-benchData =
-    Taskell
-        "Benchmark"
-        "Some bench data"
-        allContributors
-        allLists
-        (ListID <$> Seq.fromList [2, 1])
-        allTasks
+benchData = tmpData
 
 main :: IO ()
 main =
@@ -192,4 +69,36 @@ main =
               , bench "move down - change" $ whnf (moveTaskDown (TaskID 1)) benchData
               , bench "move down - no change" $ whnf (moveTaskDown (TaskID 3)) benchData
               ]
+        , bgroup
+              "text-wrapping"
+              [ bench "simple" $ whnf (S.withWidth 20) "hello"
+              , bench "longer" $
+                whnf (S.withWidth 20) "hello how are you today? My name is blah blah"
+              , bench "long" $ whnf (S.withWidth 20) longText
+              ]
+        , bgroup
+              "text-editing"
+              [ bench "up short" $ whnf (E.up <=< E.create 5) "Hello Today Fish"
+              , bench "up long" $ whnf (E.up <=< E.create 30) longText
+              , bench "down short" $ whnf (E.down <=< E.create 5) "Hello Today Fish"
+              , bench "down long" $ whnf (E.down <=< E.create 30) longText
+              , bench "begin short" $ whnf (E.begin <=< E.create 5) "Hello Today Fish"
+              , bench "begin long" $ whnf (E.begin <=< E.create 30) longText
+              , bench "end short" $ whnf (E.end <=< E.create 5) "Hello Today Fish"
+              , bench "end long" $ whnf (E.end <=< E.create 30) longText
+              , bench "endOfLine short" $ whnf (E.endOfLine <=< E.create 5) "Hello Today Fish"
+              , bench "endOfLine long" $ whnf (E.endOfLine <=< E.create 30) longText
+              , bench "top short" $ whnf (E.top <=< E.create 5) "Hello Today Fish"
+              , bench "top long" $ whnf (E.top <=< E.create 30) longText
+              , bench "bottom short" $ whnf (E.bottom <=< E.create 5) "Hello Today Fish"
+              , bench "bottom long" $ whnf (E.bottom <=< E.create 30) longText
+              , bench "insert short" $ whnf (E.insert 'e' <=< E.create 5) "Hello Today Fish"
+              , bench "insert long" $ whnf (E.insert 'e' <=< E.create 30) longText
+              , bench "backspace short" $ whnf (E.backspace <=< E.create 5) "Hello Today Fish"
+              , bench "backspace long" $ whnf (E.backspace <=< E.create 30) longText
+              ]
         ]
+
+longText :: Text
+longText =
+    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Hendrerit gravida rutrum quisque non tellus. Ut tellus elementum sagittis vitae et leo. Quisque egestas diam in arcu. Cras sed felis eget velit aliquet sagittis. Turpis massa tincidunt dui ut ornare. Ac tortor vitae purus faucibus ornare suspendisse sed nisi. Neque convallis a cras semper. Tempor orci eu lobortis elementum nibh tellus molestie. Amet tellus cras adipiscing enim eu turpis egestas pretium aenean.\nTincidunt eget nullam non nisi est sit amet facilisis magna. Euismod elementum nisi quis eleifend quam. Tortor at risus viverra adipiscing at in tellus integer. Tincidunt vitae semper quis lectus nulla at. Sed odio morbi quis commodo. Duis tristique sollicitudin nibh sit amet commodo nulla. Pharetra magna ac placerat vestibulum. Sagittis purus sit amet volutpat. Cursus risus at ultrices mi tempus imperdiet nulla. A erat nam at lectus urna duis convallis convallis tellus. Urna et pharetra pharetra massa. Mattis vulputate enim nulla aliquet porttitor lacus. Amet mauris commodo quis imperdiet massa tincidunt nunc pulvinar. Nam libero justo laoreet sit amet cursus sit. Sit amet dictum sit amet justo donec. Egestas integer eget aliquet nibh praesent tristique magna sit amet.\nEu nisl nunc mi ipsum faucibus vitae aliquet nec. Amet cursus sit amet dictum. Nibh nisl condimentum id venenatis a condimentum. Commodo ullamcorper a lacus vestibulum sed arcu non odio euismod. Diam sollicitudin tempor id eu nisl. Imperdiet nulla malesuada pellentesque elit. Ullamcorper velit sed ullamcorper morbi tincidunt ornare. Diam phasellus vestibulum lorem sed risus ultricies tristique. Ante in nibh mauris cursus mattis molestie a iaculis. Turpis nunc eget lorem dolor. Convallis a cras semper auctor neque vitae tempus. Adipiscing commodo elit at imperdiet dui accumsan sit amet nulla. Lacinia at quis risus sed vulputate odio ut. Ipsum dolor sit amet consectetur. Amet nulla facilisi morbi tempus iaculis urna. Diam donec adipiscing tristique risus.\nConvallis aenean et tortor at risus viverra adipiscing at. Mattis enim ut tellus elementum sagittis vitae. Integer vitae justo eget magna fermentum. Adipiscing at in tellus integer feugiat scelerisque. Id venenatis a condimentum vitae. Pellentesque massa placerat duis ultricies. Augue eget arcu dictum varius. Habitant morbi tristique senectus et netus et. Amet est placerat in egestas erat. Enim nunc faucibus a pellentesque. Ornare quam viverra orci sagittis eu volutpat odio.\nFacilisis magna etiam tempor orci eu lobortis elementum. Pharetra et ultrices neque ornare aenean euismod elementum nisi quis. Ultrices tincidunt arcu non sodales. Duis ultricies lacus sed turpis tincidunt id aliquet risus feugiat. Consequat semper viverra nam libero justo. Faucibus scelerisque eleifend donec pretium vulputate. Dolor magna eget est lorem ipsum. Mauris nunc congue nisi vitae suscipit tellus. Elit ut aliquam purus sit. Vitae justo eget magna fermentum iaculis eu non diam. Ut tortor pretium viverra suspendisse potenti nullam ac tortor. Orci ac auctor augue mauris augue neque. In vitae turpis massa sed."

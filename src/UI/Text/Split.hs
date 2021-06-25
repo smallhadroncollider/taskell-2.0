@@ -1,35 +1,46 @@
 module UI.Text.Split
-    ( withWidth
+    ( Rows
+    , Parts
+    , withWidth
+    , split
+    , rowsToText
     ) where
 
 import RIO
-import qualified RIO.Text as T
+import qualified RIO.Seq as Seq
+import qualified RIO.Text as T (concat, splitAt)
 
 import qualified Brick.Widgets.Core as B (textWidth)
 
 import UI.Text.Parser
 
+import qualified Error
+
 type ReaderWidth = Reader Int
 
-type Accumulator = (Text, [Text])
+type Rows = Seq.Seq Parts
+
+type Accumulator = (Maybe (Parts, Int), Rows)
 
 splitLongWord :: Accumulator -> Text -> ReaderWidth Accumulator
-splitLongWord (current, rest) text = do
+splitLongWord (acc, rest) text = do
     width <- ask
     let (firstLine, secondLine) = T.splitAt width text
-    let rest' = rest <> filter (/= "") [current, firstLine]
+    let rest' = maybe rest ((rest Seq.|>) . fst) acc
+    let rest'' = rest' <> Seq.singleton [Word firstLine]
     if B.textWidth secondLine > width
-        then splitLongWord ("", rest') secondLine
-        else pure (secondLine, rest')
+        then splitLongWord (Nothing, rest'') secondLine
+        else pure (Just ([Word secondLine], B.textWidth secondLine), rest'')
 
 joinWord :: Accumulator -> Text -> ReaderWidth Accumulator
-joinWord (current, rest) text = do
-    let joined = current <> text
+joinWord (Nothing, rest) text = pure (Just ([Word text], B.textWidth text), rest)
+joinWord (Just (parts, lng), rest) text = do
+    let tLng = B.textWidth text
     width <- ask
     pure $
-        if B.textWidth joined > width
-            then (text, rest <> [current])
-            else (joined, rest)
+        if lng + tLng > width
+            then (Just ([Word text], tLng), rest Seq.|> parts)
+            else (Just (parts <> [Word text], lng + tLng), rest)
 
 splitWord :: Accumulator -> Text -> ReaderWidth Accumulator
 splitWord acc text = do
@@ -39,17 +50,40 @@ splitWord acc text = do
         else joinWord acc text
 
 splitPart :: Accumulator -> Part -> ReaderWidth Accumulator
-splitPart (current, rest) LineBreak = pure ("", rest <> [current])
-splitPart (current, rest) (Whitespace text) = pure (current <> text, rest)
+-- linebreak: new line no matter what
+splitPart (Nothing, rest) LineBreak = pure (Just ([LineBreak], 0), rest)
+splitPart (Just (parts, _), rest) LineBreak = pure (Just ([LineBreak], 0), rest Seq.|> parts)
+-- whitespace: add to current line no matter what
+splitPart (Nothing, rest) (Whitespace text) =
+    pure (Just ([Whitespace text], B.textWidth text), rest)
+splitPart (Just (parts, lng), rest) (Whitespace text) =
+    pure (Just (parts <> [Whitespace text], lng + B.textWidth text), rest)
+-- words: split appropriately
 splitPart acc (Word text) = splitWord acc text
 
-merge :: (a, [a]) -> [a]
-merge (item, list) = list <> [item]
+merge :: Accumulator -> Rows
+merge (Nothing, list) = list
+merge (Just (parts, _), list) = list Seq.|> parts
 
-split :: [Part] -> ReaderWidth [Text]
-split parts = merge <$> foldM splitPart ("", []) parts
+toRows :: Parts -> ReaderWidth Rows
+toRows parts = merge <$> foldM splitPart (Nothing, Seq.empty) parts
 
-withWidth :: Int -> Text -> Either Text [Text]
-withWidth width text = do
+joinRow :: Part -> Text
+joinRow (Word text) = text
+joinRow (Whitespace text) = text
+joinRow LineBreak = ""
+
+rowToText :: Parts -> Text
+rowToText row = T.concat $ joinRow <$> row
+
+rowsToText :: Rows -> [Text]
+rowsToText rows = toList $ rowToText <$> rows
+
+-- exported
+split :: Int -> Text -> Error.EitherError Rows
+split width text = do
     parts <- parse text
-    pure $ runReader (split parts) width
+    pure $ runReader (toRows parts) width
+
+withWidth :: Int -> Text -> Error.EitherError [Text]
+withWidth width text = rowsToText <$> split width text

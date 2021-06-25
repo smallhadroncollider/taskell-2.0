@@ -8,12 +8,17 @@ import qualified RIO.Seq as Seq
 
 import Test.Hspec
 
-import Taskell.Data.TestData
+import TmpData
 
 import Taskell.Data.Taskell
 import Taskell.Data.Types.List as L
 import Taskell.Data.Types.Task as T
 import qualified Taskell.Data.Types.Taskell as Taskell
+
+import qualified Error
+
+testData :: Taskell
+testData = tmpData
 
 -- tests
 spec :: Spec
@@ -146,4 +151,4 @@ spec = do
                               , (TaskID 5, task5 & T.related .~ Seq.empty)
                               ]))
             it "no task" $
-                removeTasks (TaskID 99) testData `shouldBe` e "Unknown reference: TaskID 99"
+                removeTasks (TaskID 99) testData `shouldBe` Error.e "Unknown reference: TaskID 99"

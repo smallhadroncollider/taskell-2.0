@@ -8,7 +8,7 @@ import qualified RIO.Seq as Seq
 
 import Test.Hspec
 
-import Taskell.Data.TestData
+import TmpData
 
 import Taskell.Data.Types.List as L (List(..), ListID(..), title)
 import Taskell.Data.Types.Taskell (listsOrder)
@@ -16,8 +16,8 @@ import Taskell.Data.Types.Taskell (listsOrder)
 import Taskell.Data.Taskell
     ( Taskell(..)
     , addList
-    , e
     , getLists
+    , getListsWithIDs
     , moveListLeft
     , moveListRight
     , removeList
@@ -25,11 +25,19 @@ import Taskell.Data.Taskell
     , tasksForList
     )
 
+import qualified Error
+
+testData :: Taskell
+testData = tmpData
+
 -- tests
 spec :: Spec
 spec = do
     describe "Taskell Lists" $ do
         it "gets lists" $ getLists testData `shouldBe` Right (Seq.fromList [list2, list1])
+        it "gets lists with IDs" $
+            getListsWithIDs testData `shouldBe`
+            Right (Seq.fromList [(ListID 2, list2), (ListID 1, list1)])
         describe "adds lists" $ do
             it "list 3" $
                 addList "Third List" (ListID 3) testData `shouldBe`
@@ -84,4 +92,4 @@ spec = do
             it "list 2" $
                 tasksForList (ListID 2) testData `shouldBe` Right (Seq.fromList [task2, task4])
             it "no list" $
-                tasksForList (ListID 3) testData `shouldBe` e "Unknown reference: ListID 3"
+                tasksForList (ListID 3) testData `shouldBe` Error.e "Unknown reference: ListID 3"

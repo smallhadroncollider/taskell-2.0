@@ -1,10 +1,11 @@
 module Taskell.Data.Taskell
     ( TT.Taskell(..)
-    , e
+    , ListTuples
     , removeTasks
     , tasksForList
     , tasksForTask
     , getLists
+    , getListsWithIDs
     , moveListLeft
     , moveListRight
     , renameList
@@ -34,27 +35,29 @@ import qualified Taskell.Data.Types.List as TTL
 import qualified Taskell.Data.Types.Task as TTT
 import qualified Taskell.Data.Types.Taskell as TT
 
-newtype Error =
-    Error Text
-    deriving (Show, Eq)
+import qualified Error
 
-e :: Text -> Either Error a
-e text = Left (Error text)
-
-mEither :: Text -> Maybe a -> Either Error a
-mEither text = maybe (e text) pure
-
-type Result a = TT.Taskell -> Either Error a
+type Result a = TT.Taskell -> Error.EitherError a
 
 type Update = Result TT.Taskell
 
 -- getting lists
+type ListTuples = (TTL.ListID, TTL.List)
+
 getList :: TTL.ListID -> Result TTL.List
 getList listID taskell =
-    mEither ("Unknown reference: " <> tshow listID) (HM.lookup listID (taskell ^. TT.lists))
+    Error.mEither ("Unknown reference: " <> tshow listID) (HM.lookup listID (taskell ^. TT.lists))
+
+getListWithID :: TTL.ListID -> Result ListTuples
+getListWithID listID taskell = do
+    list <- getList listID taskell
+    pure (listID, list)
 
 getLists :: Result (Seq.Seq TTL.List)
 getLists taskell = traverse (`getList` taskell) (taskell ^. TT.listsOrder)
+
+getListsWithIDs :: Result (Seq.Seq ListTuples)
+getListsWithIDs taskell = traverse (`getListWithID` taskell) (taskell ^. TT.listsOrder)
 
 -- reordering lists
 moveListLeft :: TTL.ListID -> Update
@@ -105,9 +108,9 @@ tasksForList listID taskell = getList listID taskell >>= (`taskIDsToTasks` taske
 tasksForTask :: TTT.TaskID -> Result (Seq.Seq TTT.Task)
 tasksForTask taskID taskell = getTask taskID taskell >>= (`taskIDsToTasks` taskell) . (^. TTT.tasks)
 
-getTask :: TTT.TaskID -> TT.Taskell -> Either Error TTT.Task
+getTask :: TTT.TaskID -> TT.Taskell -> Error.EitherError TTT.Task
 getTask taskID taskell =
-    mEither ("Unknown reference: " <> tshow taskID) (HM.lookup taskID (taskell ^. TT.tasks))
+    Error.mEither ("Unknown reference: " <> tshow taskID) (HM.lookup taskID (taskell ^. TT.tasks))
 
 addTaskToList :: Text -> TTT.TaskID -> TTL.ListID -> Update
 addTaskToList title taskID listID taskell =
