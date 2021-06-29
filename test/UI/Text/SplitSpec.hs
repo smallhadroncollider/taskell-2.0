@@ -16,47 +16,53 @@ spec = do
     describe "split" $ do
         describe "single line" $ do
             it "empty string" $ split 10 "" `shouldBe` Right (Seq.fromList [])
-            it "single word" $ split 20 "hello" `shouldBe` Right (Seq.fromList [[Word "hello"]])
+            it "single word" $
+                split 20 "hello" `shouldBe` Right (Seq.fromList [([Word "hello"], 5)])
             it "two words" $
                 split 11 "hello world" `shouldBe`
-                Right (Seq.fromList [[Word "hello", Whitespace " ", Word "world"]])
+                Right (Seq.fromList [([Word "hello", Whitespace " ", Word "world"], 11)])
         describe "multiple lines" $ do
             it "two words" $
                 split 5 "hello world" `shouldBe`
-                Right (Seq.fromList [[Word "hello", Whitespace " "], [Word "world"]])
+                Right (Seq.fromList [([Word "hello", Whitespace " "], 6), ([Word "world"], 5)])
             it "multiple words" $
                 split 11 "hello world today" `shouldBe`
                 Right
                     (Seq.fromList
-                         [ [Word "hello", Whitespace " ", Word "world", Whitespace " "]
-                         , [Word "today"]
+                         [ ([Word "hello", Whitespace " ", Word "world", Whitespace " "], 12)
+                         , ([Word "today"], 5)
                          ])
         describe "line breaks" $ do
             it "newline" $
                 split 11 "hello\nworld today fish" `shouldBe`
                 Right
                     (Seq.fromList
-                         [ [Word "hello"]
-                         , [LineBreak, Word "world", Whitespace " ", Word "today", Whitespace " "]
-                         , [Word "fish"]
+                         [ ([Word "hello"], 5)
+                         , ( [LineBreak, Word "world", Whitespace " ", Word "today", Whitespace " "]
+                           , 12)
+                         , ([Word "fish"], 4)
                          ])
             it "multiple newline" $
                 split 11 "hello\n\nworld today fish" `shouldBe`
                 Right
                     (Seq.fromList
-                         [ [Word "hello"]
-                         , [LineBreak]
-                         , [LineBreak, Word "world", Whitespace " ", Word "today", Whitespace " "]
-                         , [Word "fish"]
+                         [ ([Word "hello"], 5)
+                         , ([LineBreak], 0)
+                         , ( [LineBreak, Word "world", Whitespace " ", Word "today", Whitespace " "]
+                           , 12)
+                         , ([Word "fish"], 4)
                          ])
             it "newline" $
                 split 20 "hello \n" `shouldBe`
-                Right (Seq.fromList [[Word "hello", Whitespace " "], [LineBreak]])
+                Right (Seq.fromList [([Word "hello", Whitespace " "], 6), ([LineBreak], 0)])
             it "newline" $
                 split 20 "hello \n\nh" `shouldBe`
                 Right
                     (Seq.fromList
-                         [[Word "hello", Whitespace " "], [LineBreak], [LineBreak, Word "h"]])
+                         [ ([Word "hello", Whitespace " "], 6)
+                         , ([LineBreak], 0)
+                         , ([LineBreak, Word "h"], 1)
+                         ])
     describe "withWidth" $ do
         describe "single line" $ do
             it "empty string" $ withWidth 10 "" `shouldBe` Right []

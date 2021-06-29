@@ -1,5 +1,6 @@
 module UI.Text.Split
     ( Rows
+    , Row
     , Parts
     , withWidth
     , split
@@ -18,16 +19,18 @@ import qualified Error
 
 type ReaderWidth = Reader Int
 
-type Rows = Seq.Seq Parts
+type Row = (Parts, Int)
 
-type Accumulator = (Maybe (Parts, Int), Rows)
+type Rows = Seq.Seq Row
+
+type Accumulator = (Maybe Row, Rows)
 
 splitLongWord :: Accumulator -> Text -> ReaderWidth Accumulator
 splitLongWord (acc, rest) text = do
     width <- ask
     let (firstLine, secondLine) = T.splitAt width text
-    let rest' = maybe rest ((rest Seq.|>) . fst) acc
-    let rest'' = rest' <> Seq.singleton [Word firstLine]
+    let rest' = maybe rest (rest Seq.|>) acc
+    let rest'' = rest' <> Seq.singleton ([Word firstLine], B.textWidth firstLine)
     if B.textWidth secondLine > width
         then splitLongWord (Nothing, rest'') secondLine
         else pure (Just ([Word secondLine], B.textWidth secondLine), rest'')
@@ -39,7 +42,7 @@ joinWord (Just (parts, lng), rest) text = do
     width <- ask
     pure $
         if lng + tLng > width
-            then (Just ([Word text], tLng), rest Seq.|> parts)
+            then (Just ([Word text], tLng), rest Seq.|> (parts, lng))
             else (Just (parts <> [Word text], lng + tLng), rest)
 
 splitWord :: Accumulator -> Text -> ReaderWidth Accumulator
@@ -52,7 +55,7 @@ splitWord acc text = do
 splitPart :: Accumulator -> Part -> ReaderWidth Accumulator
 -- linebreak: new line no matter what
 splitPart (Nothing, rest) LineBreak = pure (Just ([LineBreak], 0), rest)
-splitPart (Just (parts, _), rest) LineBreak = pure (Just ([LineBreak], 0), rest Seq.|> parts)
+splitPart (Just row, rest) LineBreak = pure (Just ([LineBreak], 0), rest Seq.|> row)
 -- whitespace: add to current line no matter what
 splitPart (Nothing, rest) (Whitespace text) =
     pure (Just ([Whitespace text], B.textWidth text), rest)
@@ -63,7 +66,7 @@ splitPart acc (Word text) = splitWord acc text
 
 merge :: Accumulator -> Rows
 merge (Nothing, list) = list
-merge (Just (parts, _), list) = list Seq.|> parts
+merge (Just row, list) = list Seq.|> row
 
 toRows :: Parts -> ReaderWidth Rows
 toRows parts = merge <$> foldM splitPart (Nothing, Seq.empty) parts
@@ -77,7 +80,7 @@ rowToText :: Parts -> Text
 rowToText row = T.concat $ joinRow <$> row
 
 rowsToText :: Rows -> [Text]
-rowsToText rows = toList $ rowToText <$> rows
+rowsToText rows = toList $ rowToText . fst <$> rows
 
 -- exported
 split :: Int -> Text -> Error.EitherError Rows

@@ -63,6 +63,6 @@ expected =
 spec :: Spec
 spec = do
     describe "cursor position" $ do
-        let editors = sequence $ L.scanl' (>>=) start operations
+        let editors = L.scanl' (>>=) start operations
         let cursors = ((\e -> (e ^. cursor, dump e)) <$>) <$> editors
-        it "cursors" $ cursors `shouldBe` Right expected
+        it "cursors" $ cursors `shouldBe` (Right <$> expected)

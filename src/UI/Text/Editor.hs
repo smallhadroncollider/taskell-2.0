@@ -12,7 +12,7 @@ import qualified Brick.Widgets.Core as B (textWidth)
 import Lens.Micro.TH (makeLenses)
 
 import qualified UI.Text.Parser as P
-import qualified UI.Text.Split as S (Rows, split)
+import qualified UI.Text.Split as S (Row, Rows, split)
 
 import qualified Error
 
@@ -68,9 +68,9 @@ updateIf :: Bool -> (Editor -> Editor) -> Editor -> EditorE
 updateIf tf fn ed = pure $ bool ed (fn ed) tf
 
 lineCount :: Editor -> Int -> Int
-lineCount ed v = maybe 0 count mLine
+lineCount ed v = fromMaybe 0 c
   where
-    mLine = Seq.lookup v (ed ^. rows)
+    c = snd <$> Seq.lookup v (ed ^. rows)
 
 currentLineCount :: Editor -> Int
 currentLineCount ed = lineCount ed v
@@ -82,32 +82,11 @@ rowCount ed = Seq.length rws
   where
     rws = ed ^. rows
 
-newLineAtStart :: Editor -> Error.EitherError Bool
-newLineAtStart ed = do
-    let rws = ed ^. rows
-    let idx = ed ^. cursor . vertical
-    firstPart <- Error.mEither "Cursor: cannot get first part" $ L.headMaybe =<< Seq.lookup idx rws
-    pure $ firstPart == P.LineBreak
-
 prune :: Editor -> EditorE
 prune ed = do
     let h = ed ^. cursor . horizontal
-    let cnt = currentLineCount ed
-    limit <- bool cnt (cnt - 1) <$> newLineAtStart ed
+    let limit = currentLineCount ed
     updateIf (h > currentLineCount ed) (cursor %~ setHorizontal limit) ed
-
-tidyLineBreak :: Editor -> EditorE
-tidyLineBreak ed = do
-    nl <- newLineAtStart ed
-    updateIf nl (cursor %~ stepHorizontal (-1)) ed
-
-countPart :: P.Part -> Int
-countPart (P.Word text) = B.textWidth text
-countPart (P.Whitespace text) = B.textWidth text
-countPart P.LineBreak = 1
-
-count :: [P.Part] -> Int
-count parts = sum $ countPart <$> parts
 
 -- Brick gives -1 for new line, which is unhelpful in this scenario
 textWidth :: Text -> Int
@@ -115,7 +94,9 @@ textWidth "\n" = 1
 textWidth txt = B.textWidth txt
 
 setPos :: Editor -> EditorE
-setPos ed = update (position .~ getRelativePosition ed) ed
+setPos ed = do
+    pos <- getRelativePosition ed
+    update (position .~ pos) ed
 
 setCur :: Editor -> EditorE
 setCur ed = do
@@ -169,24 +150,46 @@ bottom ed = setPos =<< update (cursor %~ setVertical v) ed
     v = bool 0 (rws - 1) (rws > 0)
 
 -- editing
-getRelativePosition :: Editor -> Int
-getRelativePosition ed = beforeCount + h
-  where
-    Cursor h v = ed ^. cursor
-    rws = ed ^. rows
-    before = Seq.take v rws
-    beforeCount = sum $ count <$> before
+nl :: P.Parts -> Error.EitherError Bool
+nl parts = do
+    firstPart <- Error.mEither "Cursor: cannot get first part" $ L.headMaybe parts
+    pure $ firstPart == P.LineBreak
+
+nlRow :: Int -> S.Rows -> Error.EitherError Bool
+nlRow idx rws = do
+    (cur, _) <- Error.mEither "Cursor: cannot get row" $ Seq.lookup idx rws
+    nl cur
+
+countRow :: S.Row -> Error.EitherError Int
+countRow (parts, count) = do
+    n <- nl parts
+    pure $
+        if n
+            then count + 1
+            else count
+
+getRelativePosition :: Editor -> Error.EitherError Int
+getRelativePosition ed = do
+    let Cursor h v = ed ^. cursor
+    let rws = ed ^. rows
+    if null rws
+        then pure 0
+        else do
+            let before = Seq.take v rws
+            beforeCounts <- sequence $ countRow <$> before
+            h' <- bool h (h + 1) <$> nlRow v rws
+            pure $ sum beforeCounts + h'
 
 setCursorFromRelativePosition :: Int -> Editor -> EditorE
 setCursorFromRelativePosition 0 ed = update (cursor .~ new) ed
 setCursorFromRelativePosition pos ed = do
     let rws = ed ^. rows
-    let lengths = Seq.scanl (+) 0 (count <$> rws)
+    lengths <- Seq.scanl (+) 0 <$> sequence (countRow <$> rws)
     idx <-
         Error.mEither "Cursor: no rows are shorter than position" $ Seq.findIndexR (< pos) lengths
     pos' <- Error.mEither "Cursor: cannot find relevant length" $ (pos -) <$> Seq.lookup idx lengths
-    ed' <- update (cursor %~ setCursor (pos', idx)) ed
-    tidyLineBreak ed'
+    pos'' <- bool pos' (pos' - 1) <$> nlRow idx rws
+    update (cursor %~ setCursor (pos'', idx)) ed
 
 edit :: (Int -> (Text, Text) -> (Text, Int)) -> Editor -> EditorE
 edit fn ed = do
@@ -226,7 +229,7 @@ dumpRowToText :: P.Parts -> Text
 dumpRowToText row = T.concat $ dumpRow <$> row
 
 dumpRows :: S.Rows -> Text
-dumpRows rws = T.concat . toList $ dumpRowToText <$> rws
+dumpRows rws = T.concat . toList $ dumpRowToText . fst <$> rws
 
 dump :: Editor -> Text
 dump ed = dumpRows (ed ^. rows)
