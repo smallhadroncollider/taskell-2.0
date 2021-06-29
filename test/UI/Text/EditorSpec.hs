@@ -147,9 +147,6 @@ spec = do
                 it "error" $ do
                     ((^. cursor) <$> (setCursorFromRelativePosition (-1) =<< create 20 "hello\n\nh")) `shouldBe`
                         e "Cursor: no rows are shorter than position"
-                it "error" $ do
-                    ((^. cursor) <$> (setCursorFromRelativePosition 9 =<< create 20 "hello\n\nh")) `shouldBe`
-                        e "Cursor: cannot get row"
     describe "insert" $ do
         it "adds on end" $ dump <$> (insert 'x' =<< create 20 "Hello") `shouldBe` Right "Hellox"
         it "adds on end - longer" $

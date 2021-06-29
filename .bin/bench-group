@@ -1,0 +1,3 @@
+stack bench --work-dir .stack-bench --ba "$1 --output benchmark.html --csv benchmarks/results/$1-$(date '+%Y-%m-%dT%H:%M').csv"
+(cd benchmarks/results && criterion-cmp $(ls | grep "$1" | tail -n 2))
+open -g benchmark.html

@@ -49,6 +49,7 @@ data Editor =
         , _position :: Int
         , _width :: Int
         , _rows :: S.Rows
+        , _lineBreaks :: [Int]
         }
     deriving (Eq)
 
@@ -59,7 +60,8 @@ makeLenses ''Editor
 create :: Int -> Text -> EditorE
 create w text = do
     rws <- S.split w text
-    end $ Editor new 0 w rws
+    let lnBreaks = findLineBreaks rws
+    end $ Editor new 0 w rws lnBreaks
 
 update :: (Editor -> Editor) -> Editor -> EditorE
 update fn ed = pure $ fn ed
@@ -97,11 +99,6 @@ setPos :: Editor -> EditorE
 setPos ed = do
     pos <- getRelativePosition ed
     update (position .~ pos) ed
-
-setCur :: Editor -> EditorE
-setCur ed = do
-    let pos = ed ^. position
-    setCursorFromRelativePosition pos ed
 
 -- cursor movement
 left :: Editor -> EditorE
@@ -150,45 +147,42 @@ bottom ed = setPos =<< update (cursor %~ setVertical v) ed
     v = bool 0 (rws - 1) (rws > 0)
 
 -- editing
-nl :: P.Parts -> Error.EitherError Bool
-nl parts = do
-    firstPart <- Error.mEither "Cursor: cannot get first part" $ L.headMaybe parts
-    pure $ firstPart == P.LineBreak
+findLineBreaks :: S.Rows -> [Int]
+findLineBreaks = Seq.findIndicesL (\(parts, _) -> maybe False (== P.LineBreak) (L.headMaybe parts))
 
-nlRow :: Int -> S.Rows -> Error.EitherError Bool
-nlRow idx rws = do
-    (cur, _) <- Error.mEither "Cursor: cannot get row" $ Seq.lookup idx rws
-    nl cur
+setRows :: S.Rows -> Editor -> EditorE
+setRows rws = update ((rows .~ rws) . (lineBreaks .~ findLineBreaks rws))
 
-countRow :: S.Row -> Error.EitherError Int
-countRow (parts, count) = do
-    n <- nl parts
-    pure $
-        if n
-            then count + 1
-            else count
+addLineBreakOffset :: [Int] -> Int -> S.Row -> Int
+addLineBreakOffset lnBreaks idx (_, count) =
+    if L.elem idx lnBreaks
+        then count + 1
+        else count
 
 getRelativePosition :: Editor -> Error.EitherError Int
 getRelativePosition ed = do
-    let Cursor h v = ed ^. cursor
     let rws = ed ^. rows
-    if null rws
-        then pure 0
-        else do
-            let before = Seq.take v rws
-            beforeCounts <- sequence $ countRow <$> before
-            h' <- bool h (h + 1) <$> nlRow v rws
-            pure $ sum beforeCounts + h'
+    pure $
+        if null rws
+            then 0
+            else do
+                let Cursor h v = ed ^. cursor
+                let before = Seq.take v rws
+                let lnBreaks = ed ^. lineBreaks
+                let adjustBy = length $ [0 .. v] `L.intersect` lnBreaks
+                let beforeCounts = snd <$> before
+                sum beforeCounts + h + adjustBy
 
 setCursorFromRelativePosition :: Int -> Editor -> EditorE
 setCursorFromRelativePosition 0 ed = update (cursor .~ new) ed
 setCursorFromRelativePosition pos ed = do
     let rws = ed ^. rows
-    lengths <- Seq.scanl (+) 0 <$> sequence (countRow <$> rws)
+    let lnBreaks = ed ^. lineBreaks
+    let lengths = Seq.scanl (+) 0 (addLineBreakOffset lnBreaks `Seq.mapWithIndex` rws)
     idx <-
         Error.mEither "Cursor: no rows are shorter than position" $ Seq.findIndexR (< pos) lengths
     pos' <- Error.mEither "Cursor: cannot find relevant length" $ (pos -) <$> Seq.lookup idx lengths
-    pos'' <- bool pos' (pos' - 1) <$> nlRow idx rws
+    let pos'' = bool pos' (pos' - 1) (L.elem idx lnBreaks)
     update (cursor %~ setCursor (pos'', idx)) ed
 
 edit :: (Int -> (Text, Text) -> (Text, Int)) -> Editor -> EditorE
@@ -197,7 +191,7 @@ edit fn ed = do
     let parts = T.splitAt pos (dump ed)
     let (txt, newPos) = fn pos parts
     updatedTxt <- S.split (ed ^. width) txt
-    setCursorFromRelativePosition newPos =<< update ((rows .~ updatedTxt) . (position .~ newPos)) ed
+    setCursorFromRelativePosition newPos =<< update (position .~ newPos) =<< setRows updatedTxt ed
 
 backspace' :: Int -> (Text, Text) -> (Text, Int)
 backspace' pos (before, after) = (txt, pos')
