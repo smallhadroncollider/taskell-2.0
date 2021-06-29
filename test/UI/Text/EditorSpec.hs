@@ -9,9 +9,6 @@ import Test.Hspec
 import Error (e)
 import UI.Text.Editor
 
-instance Show Cursor where
-    show (Cursor a b) = "(" <> show a <> "," <> show b <> ")"
-
 -- tests
 spec :: Spec
 spec = do
@@ -83,68 +80,76 @@ spec = do
             (getRelativePosition <$> create 20 "hello \n") `shouldBe` Right 7
         it "works out position" $ do
             (getRelativePosition <$> create 20 "hello \n\n") `shouldBe` Right 8
-    describe "getCursorFromRelativePosition" $ do
+    describe "setCursorFromRelativePosition" $ do
         it "works out position" $ do
-            (getCursorFromRelativePosition 0 =<< create 20 "Hello Mum") `shouldBe`
+            ((^. cursor) <$> (setCursorFromRelativePosition 0 =<< create 20 "Hello Mum")) `shouldBe`
                 Right (Cursor 0 0)
         it "works out position" $ do
-            (getCursorFromRelativePosition 2 =<< create 5 "Hello Mum") `shouldBe` Right (Cursor 2 0)
+            ((^. cursor) <$> (setCursorFromRelativePosition 2 =<< create 5 "Hello Mum")) `shouldBe`
+                Right (Cursor 2 0)
         it "works out position" $ do
-            (getCursorFromRelativePosition 5 =<< create 20 "Hello") `shouldBe` Right (Cursor 5 0)
+            ((^. cursor) <$> (setCursorFromRelativePosition 5 =<< create 20 "Hello")) `shouldBe`
+                Right (Cursor 5 0)
         it "works out position - multi-line" $ do
-            (getCursorFromRelativePosition 7 =<< create 5 "Hello Mum") `shouldBe` Right (Cursor 1 1)
+            ((^. cursor) <$> (setCursorFromRelativePosition 7 =<< create 5 "Hello Mum")) `shouldBe`
+                Right (Cursor 1 1)
         it "works out position - multi-line" $ do
-            (getCursorFromRelativePosition 9 =<< create 5 "Hello Mum") `shouldBe` Right (Cursor 3 1)
+            ((^. cursor) <$> (setCursorFromRelativePosition 9 =<< create 5 "Hello Mum")) `shouldBe`
+                Right (Cursor 3 1)
         it "works out position - spaces" $ do
-            (getCursorFromRelativePosition 6 =<< create 20 "Hello ") `shouldBe` Right (Cursor 6 0)
+            ((^. cursor) <$> (setCursorFromRelativePosition 6 =<< create 20 "Hello ")) `shouldBe`
+                Right (Cursor 6 0)
         describe "newlines" $ do
             it "works out position - new lines" $ do
-                (getCursorFromRelativePosition 7 =<< create 20 "Hello\nMum") `shouldBe`
+                ((^. cursor) <$> (setCursorFromRelativePosition 7 =<< create 20 "Hello\nMum")) `shouldBe`
                     Right (Cursor 1 1)
             it "works out position - new lines" $ do
-                (getCursorFromRelativePosition 5 =<< create 20 "hello\n") `shouldBe`
+                ((^. cursor) <$> (setCursorFromRelativePosition 5 =<< create 20 "hello\n")) `shouldBe`
                     Right (Cursor 5 0)
             it "works out position - new lines" $ do
-                (getCursorFromRelativePosition 6 =<< create 20 "hello\n") `shouldBe`
+                ((^. cursor) <$> (setCursorFromRelativePosition 6 =<< create 20 "hello\n")) `shouldBe`
                     Right (Cursor 0 1)
             it "works out position - new lines" $ do
-                (getCursorFromRelativePosition 7 =<< create 20 "hello\n\n") `shouldBe`
+                ((^. cursor) <$> (setCursorFromRelativePosition 7 =<< create 20 "hello\n\n")) `shouldBe`
                     Right (Cursor 0 2)
             it "works out position - new lines" $ do
-                (getCursorFromRelativePosition 8 =<< create 20 "hello\n\nh") `shouldBe`
+                ((^. cursor) <$> (setCursorFromRelativePosition 8 =<< create 20 "hello\n\nh")) `shouldBe`
                     Right (Cursor 1 2)
             it "works out position - new lines" $ do
-                (getCursorFromRelativePosition 9 =<< create 20 "Hello\n\n\nMum") `shouldBe`
+                ((^. cursor) <$> (setCursorFromRelativePosition 9 =<< create 20 "Hello\n\n\nMum")) `shouldBe`
                     Right (Cursor 1 3)
             describe "spaces on end" $ do
                 it "works out position - new lines" $ do
-                    (getCursorFromRelativePosition 5 =<< create 20 "hello \n") `shouldBe`
+                    ((^. cursor) <$> (setCursorFromRelativePosition 5 =<< create 20 "hello \n")) `shouldBe`
                         Right (Cursor 5 0)
                 it "works out position - new lines" $ do
-                    (getCursorFromRelativePosition 7 =<< create 20 "hello \n") `shouldBe`
+                    ((^. cursor) <$> (setCursorFromRelativePosition 7 =<< create 20 "hello \n")) `shouldBe`
                         Right (Cursor 0 1)
                 it "works out position - new lines" $ do
-                    (getCursorFromRelativePosition 8 =<< create 20 "hello \n\n") `shouldBe`
+                    ((^. cursor) <$> (setCursorFromRelativePosition 8 =<< create 20 "hello \n\n")) `shouldBe`
                         Right (Cursor 0 2)
                 it "works out position - new lines" $ do
-                    (getCursorFromRelativePosition 8 =<< insert '\n' =<< create 20 "hello \n") `shouldBe`
+                    ((^. cursor) <$>
+                     (setCursorFromRelativePosition 8 =<< insert '\n' =<< create 20 "hello \n")) `shouldBe`
                         Right (Cursor 0 2)
                 it "works out position - new lines" $ do
-                    (getCursorFromRelativePosition 9 =<< create 20 "hello \n\nh") `shouldBe`
+                    ((^. cursor) <$> (setCursorFromRelativePosition 9 =<< create 20 "hello \n\nh")) `shouldBe`
                         Right (Cursor 1 2)
                 it "works out position - new lines" $ do
-                    (getCursorFromRelativePosition 9 =<< insert 'h' =<< create 20 "hello \n\n") `shouldBe`
+                    ((^. cursor) <$>
+                     (setCursorFromRelativePosition 9 =<< insert 'h' =<< create 20 "hello \n\n")) `shouldBe`
                         Right (Cursor 1 2)
                 it "works out position - new lines" $ do
-                    (getCursorFromRelativePosition 10 =<< create 20 "hello \n\n\nh") `shouldBe`
+                    ((^. cursor) <$>
+                     (setCursorFromRelativePosition 10 =<< create 20 "hello \n\n\nh")) `shouldBe`
                         Right (Cursor 1 3)
             describe "errors" $ do
                 it "error" $ do
-                    (getCursorFromRelativePosition (-1) =<< create 20 "hello\n\nh") `shouldBe`
+                    ((^. cursor) <$> (setCursorFromRelativePosition (-1) =<< create 20 "hello\n\nh")) `shouldBe`
                         e "Cursor: no rows are shorter than position"
                 it "error" $ do
-                    (getCursorFromRelativePosition 9 =<< create 20 "hello\n\nh") `shouldBe`
-                        e "Cursor: cannot find relevant row"
+                    ((^. cursor) <$> (setCursorFromRelativePosition 9 =<< create 20 "hello\n\nh")) `shouldBe`
+                        e "Cursor: cannot get first part"
     describe "insert" $ do
         it "adds on end" $ dump <$> (insert 'x' =<< create 20 "Hello") `shouldBe` Right "Hellox"
         it "adds on end - longer" $
@@ -205,3 +210,12 @@ spec = do
     describe "parses multiple line breaks" $ do
         it "empty string" $
             (^. cursor) <$> (end =<< create 10 "Hello\n\n\n\nToday") `shouldBe` Right (Cursor 6 4)
+    describe "complex cursor" $ do
+        it "correct position on empty lines" $
+            ((^. cursor) <$> (up =<< create 20 "Hello\n\nFish")) `shouldBe` Right (Cursor 0 1)
+        it "correct position on empty lines" $
+            ((^. cursor) <$> (down =<< begin =<< create 20 "Hello\n\nFish")) `shouldBe`
+            Right (Cursor 0 1)
+        it "correct position" $
+            ((^. cursor) <$> (down =<< endOfLine =<< begin =<< create 20 "A\nB")) `shouldBe`
+            Right (Cursor 1 1)

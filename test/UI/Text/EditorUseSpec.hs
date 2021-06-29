@@ -7,11 +7,7 @@ import qualified RIO.List as L
 
 import Test.Hspec
 
-import Error (EitherError)
 import UI.Text.Editor
-
-instance Show Cursor where
-    show (Cursor a b) = "(" <> show a <> "," <> show b <> ")"
 
 start :: EditorE
 start = create 20 ""

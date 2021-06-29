@@ -21,7 +21,7 @@ data Cursor =
         { _horizontal :: Int
         , _vertical :: Int
         }
-    deriving (Eq)
+    deriving (Eq, Show)
 
 makeLenses ''Cursor
 
@@ -29,27 +29,19 @@ new :: Cursor
 new = Cursor 0 0
 
 setHorizontal :: Int -> Cursor -> Cursor
-setHorizontal h =
-    horizontal .~
-    if h > 0
-        then h
-        else 0
+setHorizontal h = horizontal .~ h
 
 stepHorizontal :: Int -> Cursor -> Cursor
-stepHorizontal h cursor = setHorizontal (cursor ^. horizontal + h) cursor
+stepHorizontal h = horizontal %~ (+ h)
 
 setVertical :: Int -> Cursor -> Cursor
-setVertical v =
-    vertical .~
-    if v > 0
-        then v
-        else 0
+setVertical v = vertical .~ v
 
 stepVertical :: Int -> Cursor -> Cursor
-stepVertical v cursor = setVertical (cursor ^. vertical + v) cursor
+stepVertical v = vertical %~ (+ v)
 
 setCursor :: (Int, Int) -> Cursor -> Cursor
-setCursor (h, v) cursor = setHorizontal h $ setVertical v cursor
+setCursor (h, v) cursor = cursor & horizontal .~ h & vertical .~ v
 
 data Editor =
     Editor
@@ -90,11 +82,24 @@ rowCount ed = Seq.length rws
   where
     rws = ed ^. rows
 
+newLineAtStart :: Editor -> Error.EitherError Bool
+newLineAtStart ed = do
+    let rws = ed ^. rows
+    let idx = ed ^. cursor . vertical
+    firstPart <- Error.mEither "Cursor: cannot get first part" $ L.headMaybe =<< Seq.lookup idx rws
+    pure $ firstPart == P.LineBreak
+
 prune :: Editor -> EditorE
 prune ed = do
     let h = ed ^. cursor . horizontal
-    let limit = currentLineCount ed
+    let cnt = currentLineCount ed
+    limit <- bool cnt (cnt - 1) <$> newLineAtStart ed
     updateIf (h > currentLineCount ed) (cursor %~ setHorizontal limit) ed
+
+tidyLineBreak :: Editor -> EditorE
+tidyLineBreak ed = do
+    nl <- newLineAtStart ed
+    updateIf nl (cursor %~ stepHorizontal (-1)) ed
 
 countPart :: P.Part -> Int
 countPart (P.Word text) = B.textWidth text
@@ -104,14 +109,18 @@ countPart P.LineBreak = 1
 count :: [P.Part] -> Int
 count parts = sum $ countPart <$> parts
 
+-- Brick gives -1 for new line, which is unhelpful in this scenario
+textWidth :: Text -> Int
+textWidth "\n" = 1
+textWidth txt = B.textWidth txt
+
 setPos :: Editor -> EditorE
 setPos ed = update (position .~ getRelativePosition ed) ed
 
 setCur :: Editor -> EditorE
 setCur ed = do
     let pos = ed ^. position
-    cur <- getCursorFromRelativePosition pos ed
-    update (cursor .~ cur) ed
+    setCursorFromRelativePosition pos ed
 
 -- cursor movement
 left :: Editor -> EditorE
@@ -134,13 +143,13 @@ down :: Editor -> EditorE
 down ed = setPos =<< prune =<< updateIf (v < limit) (cursor %~ stepVertical 1) ed
   where
     v = ed ^. cursor . vertical
-    limit = length (ed ^. rows) - 1
+    limit = rowCount ed - 1
 
 begin :: Editor -> EditorE
 begin ed = setPos =<< update (cursor .~ new) ed
 
 end :: Editor -> EditorE
-end ed = bottom ed >>= endOfLine
+end ed = endOfLine =<< bottom ed
 
 endOfLine :: Editor -> EditorE
 endOfLine ed = setPos =<< update (cursor %~ setHorizontal pos) ed
@@ -154,7 +163,10 @@ top :: Editor -> EditorE
 top ed = setPos =<< update (cursor %~ setVertical 0) ed
 
 bottom :: Editor -> EditorE
-bottom ed = setPos =<< update (cursor %~ setVertical (rowCount ed - 1)) ed
+bottom ed = setPos =<< update (cursor %~ setVertical v) ed
+  where
+    rws = rowCount ed
+    v = bool 0 (rws - 1) (rws > 0)
 
 -- editing
 getRelativePosition :: Editor -> Int
@@ -165,56 +177,44 @@ getRelativePosition ed = beforeCount + h
     before = Seq.take v rws
     beforeCount = sum $ count <$> before
 
-getCursorFromRelativePosition :: Int -> Editor -> Error.EitherError Cursor
-getCursorFromRelativePosition 0 _ = pure new
-getCursorFromRelativePosition pos ed = do
+setCursorFromRelativePosition :: Int -> Editor -> EditorE
+setCursorFromRelativePosition 0 ed = update (cursor .~ new) ed
+setCursorFromRelativePosition pos ed = do
     let rws = ed ^. rows
-    -- get lengths of all rows
     let lengths = Seq.scanl (+) 0 (count <$> rws)
-    -- find index of last row that's under length
     idx <-
         Error.mEither "Cursor: no rows are shorter than position" $ Seq.findIndexR (< pos) lengths
-    -- vertical will be next row
-    let v = idx
     pos' <- Error.mEither "Cursor: cannot find relevant length" $ (pos -) <$> Seq.lookup idx lengths
-    line <- Error.mEither "Cursor: cannot find relevant row" $ Seq.lookup idx rws
-    f <- Error.mEither "Cursor: empty line" $ L.headMaybe line
-    let pos'' =
-            if f == P.LineBreak
-                then pos' - 1
-                else pos'
-    pure $ Cursor pos'' v
+    ed' <- update (cursor %~ setCursor (pos', idx)) ed
+    tidyLineBreak ed'
+
+edit :: (Int -> (Text, Text) -> (Text, Int)) -> Editor -> EditorE
+edit fn ed = do
+    let pos = ed ^. position
+    let parts = T.splitAt pos (dump ed)
+    let (txt, newPos) = fn pos parts
+    updatedTxt <- S.split (ed ^. width) txt
+    setCursorFromRelativePosition newPos =<< update ((rows .~ updatedTxt) . (position .~ newPos)) ed
+
+backspace' :: Int -> (Text, Text) -> (Text, Int)
+backspace' pos (before, after) = (txt, pos')
+  where
+    removed = T.takeEnd 1 before
+    txt = T.dropEnd 1 before <> after
+    pos' = pos - textWidth removed
+
+insert' :: Char -> Int -> (Text, Text) -> (Text, Int)
+insert' char pos (before, after) = (txt, pos')
+  where
+    added = T.singleton char
+    txt = before <> added <> after
+    pos' = pos + textWidth added
 
 backspace :: Editor -> EditorE
-backspace ed = do
-    let pos = ed ^. position
-    let txt = dump ed
-    let (before, after) = T.splitAt pos txt
-    let removed = T.takeEnd 1 before
-    let removedLength =
-            if removed == "\n"
-                then 1
-                else B.textWidth removed
-    updatedTxt <- S.split (ed ^. width) (T.dropEnd 1 before <> after)
-    let pos' = pos - removedLength
-    ed' <- update ((rows .~ updatedTxt) . (position .~ pos')) ed
-    newCursor <- getCursorFromRelativePosition pos' ed'
-    update (cursor .~ newCursor) ed'
+backspace = edit backspace'
 
 insert :: Char -> Editor -> EditorE
-insert char ed = do
-    let pos = ed ^. position
-    let txt = dump ed
-    let (before, after) = T.splitAt pos txt
-    let extra = T.singleton char
-    updatedTxt <- S.split (ed ^. width) (before <> extra <> after)
-    let pos' =
-            if char == '\n'
-                then pos + 1
-                else pos + B.textWidth extra
-    ed' <- update ((rows .~ updatedTxt) . (position .~ pos')) ed
-    newCursor <- getCursorFromRelativePosition pos' ed'
-    update (cursor .~ newCursor) ed'
+insert char = edit (insert' char)
 
 -- dump
 dumpRow :: P.Part -> Text
