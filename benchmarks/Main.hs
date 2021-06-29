@@ -92,8 +92,8 @@ main =
               , bench "top long" $ whnf (E.top <=< E.create 30) longText
               , bench "bottom short" $ whnf (E.bottom <=< E.create 5) "Hello Today Fish"
               , bench "bottom long" $ whnf (E.bottom <=< E.create 30) longText
-              , bench "insert short" $ whnf (E.insert 'e' <=< E.create 5) "Hello Today Fish"
-              , bench "insert long" $ whnf (E.insert 'e' <=< E.create 30) longText
+              , bench "insert short" $ whnf (E.insert "e" <=< E.create 5) "Hello Today Fish"
+              , bench "insert long" $ whnf (E.insert "e" <=< E.create 30) longText
               , bench "backspace short" $ whnf (E.backspace <=< E.create 5) "Hello Today Fish"
               , bench "backspace long" $ whnf (E.backspace <=< E.create 30) longText
               ]

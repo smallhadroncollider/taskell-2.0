@@ -14,22 +14,22 @@ start = create 20 ""
 
 operations :: [Editor -> EditorE]
 operations =
-    [ insert 'h'
-    , insert 'e'
-    , insert 'l'
-    , insert 'l'
-    , insert 'o'
-    , insert ' '
-    , insert '\n'
-    , insert '\n'
-    , insert 'h'
-    , insert 'o'
-    , insert 'w'
-    , insert ' '
-    , insert 'a'
-    , insert 'r'
-    , insert 'e'
-    , insert ' '
+    [ insert "h"
+    , insert "e"
+    , insert "l"
+    , insert "l"
+    , insert "o"
+    , insert " "
+    , insert "\n"
+    , insert "\n"
+    , insert "h"
+    , insert "o"
+    , insert "w"
+    , insert " "
+    , insert "a"
+    , insert "r"
+    , insert "e"
+    , insert " "
     , backspace
     ]
 

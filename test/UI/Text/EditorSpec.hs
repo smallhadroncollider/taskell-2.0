@@ -130,14 +130,14 @@ spec = do
                         Right (Cursor 0 2)
                 it "works out position - new lines" $ do
                     ((^. cursor) <$>
-                     (setCursorFromRelativePosition 8 =<< insert '\n' =<< create 20 "hello \n")) `shouldBe`
+                     (setCursorFromRelativePosition 8 =<< insert "\n" =<< create 20 "hello \n")) `shouldBe`
                         Right (Cursor 0 2)
                 it "works out position - new lines" $ do
                     ((^. cursor) <$> (setCursorFromRelativePosition 9 =<< create 20 "hello \n\nh")) `shouldBe`
                         Right (Cursor 1 2)
                 it "works out position - new lines" $ do
                     ((^. cursor) <$>
-                     (setCursorFromRelativePosition 9 =<< insert 'h' =<< create 20 "hello \n\n")) `shouldBe`
+                     (setCursorFromRelativePosition 9 =<< insert "h" =<< create 20 "hello \n\n")) `shouldBe`
                         Right (Cursor 1 2)
                 it "works out position - new lines" $ do
                     ((^. cursor) <$>
@@ -148,21 +148,24 @@ spec = do
                     ((^. cursor) <$> (setCursorFromRelativePosition (-1) =<< create 20 "hello\n\nh")) `shouldBe`
                         e "Cursor: no rows are shorter than position"
     describe "insert" $ do
-        it "adds on end" $ dump <$> (insert 'x' =<< create 20 "Hello") `shouldBe` Right "Hellox"
+        it "adds on end" $ dump <$> (insert "x" =<< create 20 "Hello") `shouldBe` Right "Hellox"
         it "adds on end - longer" $
             dump <$>
-            (insert 'x' =<< create 20 "Hello how are you today? My name is Em.") `shouldBe`
+            (insert "x" =<< create 20 "Hello how are you today? My name is Em.") `shouldBe`
             Right "Hello how are you today? My name is Em.x"
         it "keeps new lines" $
-            dump <$> (insert 'x' =<< create 20 "Hello\nMum") `shouldBe` Right "Hello\nMumx"
+            dump <$> (insert "x" =<< create 20 "Hello\nMum") `shouldBe` Right "Hello\nMumx"
         describe "cursor" $ do
             it "updates position" $
-                ((^. cursor) <$> (insert 'x' =<< create 20 "Hello")) `shouldBe` Right (Cursor 6 0)
+                ((^. cursor) <$> (insert "x" =<< create 20 "Hello")) `shouldBe` Right (Cursor 6 0)
             it "updates position over lines" $
-                ((^. cursor) <$> (insert 'x' =<< endOfLine =<< top =<< create 5 "Hello Mum")) `shouldBe`
+                ((^. cursor) <$> (insert "x" =<< endOfLine =<< top =<< create 5 "Hello Mum")) `shouldBe`
                 Right (Cursor 1 1)
             it "updates position" $
-                ((^. cursor) <$> (insert '🙀' =<< create 20 "")) `shouldBe` Right (Cursor 1 0)
+                ((^. cursor) <$> (insert "🙀" =<< create 20 "")) `shouldBe` Right (Cursor 1 0)
+            it "updates position" $
+                ((^. cursor) <$> (insert "today is" =<< create 5 "Hello")) `shouldBe`
+                Right (Cursor 2 2)
     describe "backspace" $ do
         it "removes from end" $ dump <$> (backspace =<< create 20 "Hello") `shouldBe` Right "Hell"
         it "removes from end - longer" $

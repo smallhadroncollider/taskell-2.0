@@ -200,18 +200,17 @@ backspace' pos (before, after) = (txt, pos')
     txt = T.dropEnd 1 before <> after
     pos' = pos - textWidth removed
 
-insert' :: Char -> Int -> (Text, Text) -> (Text, Int)
-insert' char pos (before, after) = (txt, pos')
+insert' :: Text -> Int -> (Text, Text) -> (Text, Int)
+insert' added pos (before, after) = (txt, pos')
   where
-    added = T.singleton char
     txt = before <> added <> after
     pos' = pos + textWidth added
 
 backspace :: Editor -> EditorE
 backspace = edit backspace'
 
-insert :: Char -> Editor -> EditorE
-insert char = edit (insert' char)
+insert :: Text -> Editor -> EditorE
+insert txt = edit (insert' txt)
 
 -- dump
 dumpRow :: P.Part -> Text
