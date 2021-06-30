@@ -15,7 +15,7 @@ import qualified Brick.Widgets.Core as B (textWidth)
 
 import Taskell.UI.Text.Parser
 
-import qualified Error
+import qualified Taskell.Error as Error
 
 type ReaderWidth = Reader Int
 

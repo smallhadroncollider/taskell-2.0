@@ -15,7 +15,7 @@ import Taskell.Data.Types.List as L
 import Taskell.Data.Types.Task as T
 import qualified Taskell.Data.Types.Taskell as Taskell
 
-import qualified Error
+import qualified Taskell.Error as Error
 
 testData :: Taskell
 testData = tmpData

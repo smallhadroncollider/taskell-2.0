@@ -35,7 +35,7 @@ import qualified Taskell.Data.Types.List as TTL
 import qualified Taskell.Data.Types.Task as TTT
 import qualified Taskell.Data.Types.Taskell as TT
 
-import qualified Error
+import qualified Taskell.Error as Error
 
 type Result a = TT.Taskell -> Error.EitherError a
 

@@ -1,4 +1,4 @@
-module Error where
+module Taskell.Error where
 
 import RIO
 

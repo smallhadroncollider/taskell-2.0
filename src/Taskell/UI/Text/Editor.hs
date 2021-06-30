@@ -36,7 +36,7 @@ import Lens.Micro.TH (makeLenses)
 import qualified Taskell.UI.Text.Parser as P
 import qualified Taskell.UI.Text.Split as S (Row, Rows, split)
 
-import qualified Error
+import qualified Taskell.Error as Error
 
 data Cursor =
     Cursor

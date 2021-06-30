@@ -9,7 +9,7 @@ import qualified RIO.Seq as Seq
 import qualified Brick as B
 import qualified Graphics.Vty as V (defAttr)
 
-import UI.Text.Split (withWidth)
+import Taskell.UI.Text.Split (withWidth)
 
 data Name =
     Name

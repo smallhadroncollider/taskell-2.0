@@ -6,7 +6,7 @@ import RIO
 
 import Test.Hspec
 
-import Error (e)
+import Taskell.Error (e)
 import Taskell.UI.Text.Editor
 
 -- tests

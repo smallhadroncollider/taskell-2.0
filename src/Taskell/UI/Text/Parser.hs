@@ -6,7 +6,7 @@ import qualified RIO.Text as T
 
 import qualified Data.Attoparsec.Text as AP
 
-import qualified Error
+import qualified Taskell.Error as Error
 
 data Part
     = Word Text

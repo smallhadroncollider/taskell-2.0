@@ -25,7 +25,7 @@ import Taskell.Data.Taskell
     , tasksForList
     )
 
-import qualified Error
+import qualified Taskell.Error as Error
 
 testData :: Taskell
 testData = tmpData
