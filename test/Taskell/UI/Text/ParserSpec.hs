@@ -1,4 +1,4 @@
-module UI.Text.ParserSpec
+module Taskell.UI.Text.ParserSpec
     ( spec
     ) where
 
@@ -6,7 +6,7 @@ import RIO
 
 import Test.Hspec
 
-import UI.Text.Parser
+import Taskell.UI.Text.Parser
 
 -- tests
 spec :: Spec

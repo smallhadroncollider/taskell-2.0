@@ -1,6 +1,28 @@
 {-# LANGUAGE TemplateHaskell #-}
 
-module UI.Text.Editor where
+module Taskell.UI.Text.Editor
+    ( Editor
+    , EditorE
+    , Cursor(..)
+    , cursor
+    , rows
+    , dump
+    , create
+    , insert
+    , backspace
+    , top
+    , bottom
+    , up
+    , down
+    , right
+    , left
+    , end
+    , begin
+    , endOfLine
+    , startOfLine
+    , getRelativePosition
+    , setCursorFromRelativePosition
+    ) where
 
 import RIO
 import qualified RIO.List as L
@@ -11,8 +33,8 @@ import qualified Brick.Widgets.Core as B (textWidth)
 
 import Lens.Micro.TH (makeLenses)
 
-import qualified UI.Text.Parser as P
-import qualified UI.Text.Split as S (Row, Rows, split)
+import qualified Taskell.UI.Text.Parser as P
+import qualified Taskell.UI.Text.Split as S (Row, Rows, split)
 
 import qualified Error
 

@@ -21,8 +21,8 @@ import Taskell.Data.Taskell
     , tasksForTask
     )
 
-import qualified UI.Text.Editor as E
-import qualified UI.Text.Split as S
+import qualified Taskell.UI.Text.Editor as E
+import qualified Taskell.UI.Text.Split as S
 
 import TmpData (tmpData)
 

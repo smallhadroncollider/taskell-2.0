@@ -1,4 +1,4 @@
-module UI.Text.Split
+module Taskell.UI.Text.Split
     ( Rows
     , Row
     , Parts
@@ -13,7 +13,7 @@ import qualified RIO.Text as T (concat, splitAt)
 
 import qualified Brick.Widgets.Core as B (textWidth)
 
-import UI.Text.Parser
+import Taskell.UI.Text.Parser
 
 import qualified Error
 

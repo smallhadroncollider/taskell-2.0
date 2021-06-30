@@ -1,4 +1,4 @@
-module UI.Text.SplitSpec
+module Taskell.UI.Text.SplitSpec
     ( spec
     ) where
 
@@ -7,8 +7,8 @@ import qualified RIO.Seq as Seq
 
 import Test.Hspec
 
-import UI.Text.Parser
-import UI.Text.Split
+import Taskell.UI.Text.Parser
+import Taskell.UI.Text.Split
 
 -- tests
 spec :: Spec

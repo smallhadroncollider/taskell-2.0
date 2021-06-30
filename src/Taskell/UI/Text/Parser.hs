@@ -1,4 +1,4 @@
-module UI.Text.Parser where
+module Taskell.UI.Text.Parser where
 
 import RIO
 import qualified RIO.Char as C

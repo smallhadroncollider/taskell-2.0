@@ -1,4 +1,4 @@
-module UI.Text.EditorUseSpec
+module Taskell.UI.Text.EditorUseSpec
     ( spec
     ) where
 
@@ -7,7 +7,7 @@ import qualified RIO.List as L
 
 import Test.Hspec
 
-import UI.Text.Editor
+import Taskell.UI.Text.Editor
 
 start :: EditorE
 start = create 20 ""

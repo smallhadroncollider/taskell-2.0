@@ -1,4 +1,4 @@
-module UI.Text.EditorSpec
+module Taskell.UI.Text.EditorSpec
     ( spec
     ) where
 
@@ -7,7 +7,7 @@ import RIO
 import Test.Hspec
 
 import Error (e)
-import UI.Text.Editor
+import Taskell.UI.Text.Editor
 
 -- tests
 spec :: Spec
