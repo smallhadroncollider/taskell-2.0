@@ -37,12 +37,12 @@ splitLongWord (acc, rest) text = do
 
 joinWord :: Accumulator -> Text -> ReaderWidth Accumulator
 joinWord (Nothing, rest) text = pure (Just ([Word text], B.textWidth text), rest)
-joinWord (Just (parts, lng), rest) text = do
+joinWord (Just cur@(parts, lng), rest) text = do
     let tLng = B.textWidth text
     width <- ask
     pure $
         if lng + tLng > width
-            then (Just ([Word text], tLng), rest Seq.|> (parts, lng))
+            then (Just ([Word text], tLng), rest Seq.|> cur)
             else (Just (parts <> [Word text], lng + tLng), rest)
 
 splitWord :: Accumulator -> Text -> ReaderWidth Accumulator
