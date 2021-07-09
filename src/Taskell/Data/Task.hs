@@ -21,7 +21,7 @@ import Taskell.Data.Types.List (ListID)
 import Taskell.Data.Types.Task
 
 new :: Text -> Parent -> Task
-new newTitle newParent = Task newTitle newParent "" Seq.empty Seq.empty Seq.empty Seq.empty
+new newTitle newParent = Task newTitle newParent "" [] [] [] []
 
 rename :: Text -> Update
 rename newTitle = title .~ newTitle

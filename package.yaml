@@ -30,6 +30,7 @@ ghc-options:
 
 default-extensions:
 - OverloadedStrings
+- OverloadedLists
 - NoImplicitPrelude
 
 library:

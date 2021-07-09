@@ -69,7 +69,7 @@ merge (Nothing, list) = list
 merge (Just row, list) = list Seq.|> row
 
 toRows :: Parts -> ReaderWidth Rows
-toRows parts = merge <$> foldM splitPart (Nothing, Seq.empty) parts
+toRows parts = merge <$> foldM splitPart (Nothing, []) parts
 
 joinRow :: Part -> Text
 joinRow (Word text) = text

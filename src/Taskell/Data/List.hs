@@ -31,4 +31,4 @@ addTaskTop :: TaskID -> Update
 addTaskTop taskID list = list & tasks %~ (Seq.singleton taskID <>)
 
 new :: Text -> List
-new newTitle = List newTitle Seq.empty
+new newTitle = List newTitle []

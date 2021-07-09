@@ -35,47 +35,47 @@ task1 =
         (TaskID <$> Seq.fromList [6])
         (TaskID <$> Seq.fromList [5])
         (ContributorID <$> Seq.fromList [1, 2])
-        Seq.empty
+        []
 
 task2 =
     Task
         "Second Task"
         (ParentList (ListID 2))
         "Do second thing"
-        Seq.empty
+        []
         (TaskID <$> Seq.fromList [3, 1])
         (ContributorID <$> Seq.fromList [1])
-        Seq.empty
+        []
 
 task3 =
     Task
         "Third Task"
         (ParentList (ListID 1))
         "Do third thing"
-        Seq.empty
+        []
         (TaskID <$> Seq.fromList [6, 2])
         (ContributorID <$> Seq.fromList [2])
-        Seq.empty
+        []
 
 task4 =
     Task
         "Fourth Task"
         (ParentList (ListID 2))
         "Do fourth thing"
-        Seq.empty
-        Seq.empty
+        []
+        []
         (ContributorID <$> Seq.fromList [3])
-        Seq.empty
+        []
 
 task5 =
     Task
         "Fifth Task"
         (ParentList (ListID 1))
         "Do fifth thing"
-        Seq.empty
+        []
         (TaskID <$> Seq.fromList [1])
         (ContributorID <$> Seq.fromList [2])
-        Seq.empty
+        []
 
 task6 =
     Task
@@ -83,9 +83,9 @@ task6 =
         (ParentTask (TaskID 1))
         "Sub task"
         (TaskID <$> Seq.fromList [7])
-        Seq.empty
-        Seq.empty
-        Seq.empty
+        []
+        []
+        []
 
 task7 =
     Task
@@ -93,19 +93,19 @@ task7 =
         (ParentTask (TaskID 6))
         "Sub sub task"
         (TaskID <$> Seq.fromList [8])
-        Seq.empty
-        Seq.empty
-        Seq.empty
+        []
+        []
+        []
 
 task8 =
     Task
         "Sub Sub Sub Task"
         (ParentTask (TaskID 7))
         "Sub sub sub task"
-        Seq.empty
-        Seq.empty
-        Seq.empty
-        Seq.empty
+        []
+        []
+        []
+        []
 
 allTasks :: Tasks
 allTasks =

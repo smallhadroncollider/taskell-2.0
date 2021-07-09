@@ -49,7 +49,7 @@ spec = do
                          (HM.fromList
                               [ (ListID 1, list1)
                               , (ListID 2, list2)
-                              , (ListID 3, List "Third List" Seq.empty)
+                              , (ListID 3, List "Third List" [])
                               ])
                          (Seq.fromList [ListID 2, ListID 1, ListID 3])
                          allTasks)

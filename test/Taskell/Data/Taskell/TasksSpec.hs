@@ -28,7 +28,7 @@ spec = do
             it "task 1" $ tasksForTask (TaskID 1) testData `shouldBe` Right (Seq.fromList [task6])
             it "task 6" $ tasksForTask (TaskID 6) testData `shouldBe` Right (Seq.fromList [task7])
             it "task 7" $ tasksForTask (TaskID 7) testData `shouldBe` Right (Seq.fromList [task8])
-            it "task 8" $ tasksForTask (TaskID 8) testData `shouldBe` Right Seq.empty
+            it "task 8" $ tasksForTask (TaskID 8) testData `shouldBe` Right []
         describe "adds tasks" $ do
             it "add task" $
                 addTaskToList "Blah" (TaskID 10) (ListID 1) testData `shouldBe`
@@ -49,10 +49,10 @@ spec = do
                                    "Blah"
                                    (ParentList (ListID 1))
                                    ""
-                                   Seq.empty
-                                   Seq.empty
-                                   Seq.empty
-                                   Seq.empty)
+                                   []
+                                   []
+                                   []
+                                   [])
                               allTasks))
         describe "renames task" $ do
             it "rename task" $
@@ -144,11 +144,11 @@ spec = do
                          allListsOrder
                          (HM.fromList
                               [ ( TaskID 2
-                                , task2 & T.tasks .~ Seq.empty &
+                                , task2 & T.tasks .~ [] &
                                   T.related .~ (TaskID <$> Seq.fromList [3]))
                               , (TaskID 3, task3 & T.related .~ (TaskID <$> Seq.fromList [2]))
                               , (TaskID 4, task4)
-                              , (TaskID 5, task5 & T.related .~ Seq.empty)
+                              , (TaskID 5, task5 & T.related .~ [])
                               ]))
             it "no task" $
                 removeTasks (TaskID 99) testData `shouldBe` Error.e "Unknown reference: TaskID 99"
