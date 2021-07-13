@@ -84,8 +84,8 @@ spec = do
                     , (Task.TaskID 3, [Contributor.ContributorID 2])
                     , (Task.TaskID 4, [])
                     , (Task.TaskID 5, [])
-                    , (Task.TaskID 6, [Contributor.ContributorID 1, Contributor.ContributorID 2])
-                    , (Task.TaskID 7, [])
+                    , (Task.TaskID 6, [])
+                    , (Task.TaskID 7, [Contributor.ContributorID 1, Contributor.ContributorID 2])
                     , (Task.TaskID 8, [])
                     , (Task.TaskID 9, [])
                     ]

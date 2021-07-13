@@ -1,5 +1,6 @@
 module Taskell.IO.MarkDown.Parser.Task
     ( taskP
+    , titleP
     ) where
 
 import RIO
@@ -9,8 +10,8 @@ import qualified Taskell.Utility.Parser as P
 
 import Taskell.IO.MarkDown.Parser.Types
 
-titleP :: P.Parser Text
-titleP = P.string "### " *> P.line
+titleP :: Int -> P.Parser Text
+titleP level = P.string (T.replicate level "#" <> " ") *> P.line
 
 dueP :: Dictionary -> P.Parser Text
 dueP dictionary = T.strip <$> (P.string (dictionary ^. duePrefix) *> P.line)
@@ -26,7 +27,13 @@ tasksP = do
 afterDescription :: Dictionary -> P.Parser ()
 afterDescription dictionary =
     P.choice
-        [void tasksP, void (relatedsP dictionary), void (contributorsP dictionary), void titleP]
+        [ void tasksP -- tasks block
+        , void (relatedsP dictionary) -- related block
+        , void (contributorsP dictionary) -- contributors block
+        , void (titleP 3) -- task title
+        , void (titleP 2) -- list title
+        , void P.endOfInput -- end of file
+        ]
 
 descriptionP :: Dictionary -> P.Parser Text
 descriptionP dictionary = do
@@ -57,7 +64,7 @@ contributorsP dictionary =
 taskP :: Dictionary -> P.Parser AlmostTask
 taskP dictionary =
     P.lexeme $ do
-        ttl <- titleP
+        ttl <- titleP 3
         _ <- optional P.endOfLine
         due <- optional (dueP dictionary)
         _ <- optional P.endOfLine

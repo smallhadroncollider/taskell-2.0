@@ -15,9 +15,6 @@ import Taskell.IO.MarkDown.Parser.Convert
 import Taskell.IO.MarkDown.Parser.Task
 import Taskell.IO.MarkDown.Parser.Types
 
-titleP :: P.Parser Text
-titleP = P.string "# " *> P.line
-
 descriptionP :: Text -> P.Parser Text
 descriptionP cTitle =
     T.intercalate "\n" <$> P.lexeme (P.manyTill P.line (contributorsTitleP cTitle))
@@ -45,7 +42,7 @@ hrP = void . P.lexeme $ P.string "---"
 listP :: Dictionary -> P.Parser AlmostList
 listP dictionary =
     P.lexeme $ do
-        ttl <- P.string "## " *> P.line
+        ttl <- titleP 2
         tasks <- P.many1' (taskP dictionary)
         pure $ AlmostList ttl tasks
 
@@ -54,7 +51,7 @@ listsP dictionary tsk = almostsToTaskell tsk <$> P.many' (listP dictionary)
 
 parser :: Dictionary -> P.Parser (Error.EitherError Taskell.Taskell)
 parser dictionary = do
-    t <- titleP
+    t <- titleP 1
     d <- descriptionP (dictionary ^. contributorsTitle)
     c <- contributorsP <* hrP
     listsP dictionary $ Taskell.create t & Taskell.description .~ d & Taskell.contributors .~ c

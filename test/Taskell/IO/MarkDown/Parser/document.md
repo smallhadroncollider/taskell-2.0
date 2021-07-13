@@ -80,21 +80,16 @@ This is a thing with some stuff
 
 Blah blah blah
 
-- [x] A sub-task with the thing
-- [ ] Nonsense
-
-`#thing`, `#things`
-
-**Related**: [Stuff / How are you?](#hello-mum-1)
-
-**Contributors**: *@Mark*, *@Jess*
-
 ## More Stuff
 
 ### Spoons for all!!
+
+**Contributors**: *@Mark*, *@Jess*
 
 ### Forks for all!!
 
 Some forks!
 
 ### Sporks for no one
+
+Sporks are too sporky
