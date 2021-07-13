@@ -1,6 +1,5 @@
 module Taskell.IO.MarkDown.Parser.Task
     ( taskP
-    , titleP
     ) where
 
 import RIO
@@ -9,9 +8,7 @@ import qualified RIO.Text as T
 import qualified Taskell.Utility.Parser as P
 
 import Taskell.IO.MarkDown.Parser.Types
-
-titleP :: Int -> P.Parser Text
-titleP level = P.string (T.replicate level "#" <> " ") *> P.line
+import Taskell.IO.MarkDown.Parser.Utility (titleP)
 
 dueP :: Dictionary -> P.Parser Text
 dueP dictionary = T.strip <$> (P.string (dictionary ^. duePrefix) *> P.line)

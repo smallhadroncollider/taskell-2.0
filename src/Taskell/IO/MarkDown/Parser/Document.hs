@@ -14,6 +14,7 @@ import qualified Taskell.Error as Error
 import Taskell.IO.MarkDown.Parser.Convert
 import Taskell.IO.MarkDown.Parser.Task
 import Taskell.IO.MarkDown.Parser.Types
+import Taskell.IO.MarkDown.Parser.Utility (titleP)
 
 descriptionP :: Text -> P.Parser Text
 descriptionP cTitle =
