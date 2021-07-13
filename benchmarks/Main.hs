@@ -24,15 +24,20 @@ import Taskell.Data.Taskell
 import qualified Taskell.UI.Text.Editor as E
 import qualified Taskell.UI.Text.Split as S
 
+import qualified Taskell.IO.MarkDown.Parser.Document as D
+import Taskell.IO.MarkDown.Parser.Types (defaultDictionary)
+
 import TmpData (tmpData)
 
 benchData :: Taskell
 benchData = tmpData
 
 main :: IO ()
-main =
+main = do
+    input <- readFileUtf8 "test/Taskell/IO/MarkDown/Parser/document.md"
     defaultMain
-        [ bench "getLists" $ whnf getLists benchData
+        [ bench "parses" $ whnf (D.parse input) defaultDictionary
+        , bench "getLists" $ whnf getLists benchData
         , bgroup
               "moveLists"
               [ bench "move left - no change" $ whnf (moveListLeft (ListID 2)) benchData

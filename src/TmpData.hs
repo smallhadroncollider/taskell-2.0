@@ -11,11 +11,11 @@ import Taskell.Data.Types.Task as T (Parent(..), Task(..), TaskID(..), Tasks)
 
 -- contributors
 contributor1, contributor2, contributor3 :: Contributor
-contributor1 = Contributor "Bob" "bob@bob.com"
+contributor1 = Contributor "@Bob" "Bob" "bob@bob.com"
 
-contributor2 = Contributor "Jim" "jim@jim.com"
+contributor2 = Contributor "@Jim" "Jim" "jim@jim.com"
 
-contributor3 = Contributor "Jenny" "jenny@jenny.com"
+contributor3 = Contributor "@Jenny" "Jenny" "jenny@jenny.com"
 
 allContributors :: Contributors
 allContributors =
@@ -32,6 +32,7 @@ task1 =
         "First Task"
         (ParentList (ListID 1))
         "Do first thing"
+        False
         (TaskID <$> Seq.fromList [6])
         (TaskID <$> Seq.fromList [5])
         (ContributorID <$> Seq.fromList [1, 2])
@@ -42,6 +43,7 @@ task2 =
         "Second Task"
         (ParentList (ListID 2))
         "Do second thing"
+        False
         []
         (TaskID <$> Seq.fromList [3, 1])
         (ContributorID <$> Seq.fromList [1])
@@ -52,6 +54,7 @@ task3 =
         "Third Task"
         (ParentList (ListID 1))
         "Do third thing"
+        False
         []
         (TaskID <$> Seq.fromList [6, 2])
         (ContributorID <$> Seq.fromList [2])
@@ -62,6 +65,7 @@ task4 =
         "Fourth Task"
         (ParentList (ListID 2))
         "Do fourth thing"
+        False
         []
         []
         (ContributorID <$> Seq.fromList [3])
@@ -72,40 +76,27 @@ task5 =
         "Fifth Task"
         (ParentList (ListID 1))
         "Do fifth thing"
+        False
         []
         (TaskID <$> Seq.fromList [1])
         (ContributorID <$> Seq.fromList [2])
         []
 
 task6 =
-    Task
-        "Sub Task"
-        (ParentTask (TaskID 1))
-        "Sub task"
-        (TaskID <$> Seq.fromList [7])
-        []
-        []
-        []
+    Task "Sub Task" (ParentTask (TaskID 1)) "Sub task" False (TaskID <$> Seq.fromList [7]) [] [] []
 
 task7 =
     Task
         "Sub Sub Task"
         (ParentTask (TaskID 6))
         "Sub sub task"
+        False
         (TaskID <$> Seq.fromList [8])
         []
         []
         []
 
-task8 =
-    Task
-        "Sub Sub Sub Task"
-        (ParentTask (TaskID 7))
-        "Sub sub sub task"
-        []
-        []
-        []
-        []
+task8 = Task "Sub Sub Sub Task" (ParentTask (TaskID 7)) "Sub sub sub task" False [] [] [] []
 
 allTasks :: Tasks
 allTasks =

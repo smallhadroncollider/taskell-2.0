@@ -5,6 +5,7 @@ module Taskell.Data.Types.Tag
     , Tags
     , TagID(..)
     , TagIDs
+    , name
     , tasks
     ) where
 

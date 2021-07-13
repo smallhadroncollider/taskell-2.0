@@ -13,6 +13,9 @@ module Taskell.Data.Types.Task
     , parent
     , title
     , description
+    , complete
+    , assigned
+    , tags
     ) where
 
 import Lens.Micro.TH (makeLenses)
@@ -42,6 +45,7 @@ data Task =
         { _title :: !Text
         , _parent :: !Parent
         , _description :: !Text
+        , _complete :: !Bool
         , _tasks :: !TaskIDs
         , _related :: !TaskIDs
         , _assigned :: !ContributorIDs

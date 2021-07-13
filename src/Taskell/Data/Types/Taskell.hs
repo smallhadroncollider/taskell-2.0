@@ -4,9 +4,11 @@ module Taskell.Data.Types.Taskell
     ( Taskell(..)
     , title
     , description
+    , contributors
     , lists
-    , tasks
     , listsOrder
+    , tasks
+    , create
     ) where
 
 import RIO
@@ -29,3 +31,6 @@ data Taskell =
     deriving (Eq, Show)
 
 makeLenses ''Taskell
+
+create :: Text -> Taskell
+create tle = Taskell tle "" [] [] [] []

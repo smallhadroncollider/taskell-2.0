@@ -4,7 +4,7 @@ import RIO
 import qualified RIO.Char as C
 import qualified RIO.Text as T
 
-import qualified Data.Attoparsec.Text as AP
+import qualified Taskell.Utility.Parser as P
 
 import qualified Taskell.Error as Error
 
@@ -20,19 +20,19 @@ notSpace :: Char -> Bool
 notSpace c = C.isPrint c && not (C.isSpace c)
 
 space :: Char -> Bool
-space c = C.isSpace c && not (AP.isEndOfLine c)
+space c = C.isSpace c && not (P.isEndOfLine c)
 
-whitespace :: AP.Parser Part
-whitespace = Whitespace <$> AP.takeWhile1 space
+whitespace :: P.Parser Part
+whitespace = Whitespace <$> P.takeWhile1 space
 
-newline :: AP.Parser Part
-newline = AP.endOfLine $> LineBreak
+newline :: P.Parser Part
+newline = P.endOfLine $> LineBreak
 
-word :: AP.Parser Part
-word = Word <$> AP.takeWhile1 notSpace
+word :: P.Parser Part
+word = Word <$> P.takeWhile1 notSpace
 
-parser :: AP.Parser [Part]
-parser = AP.many' $ AP.choice [word, newline, whitespace]
+parser :: P.Parser [Part]
+parser = P.many' $ P.choice [word, newline, whitespace]
 
 parse :: Text -> Error.EitherError [Part]
-parse text = first (Error.txt . T.pack) $ AP.parseOnly (parser <* AP.endOfInput) text
+parse text = first (Error.txt . T.pack) $ P.parseOnly (parser <* P.endOfInput) text

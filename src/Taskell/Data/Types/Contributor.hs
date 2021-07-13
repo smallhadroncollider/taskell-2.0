@@ -5,6 +5,9 @@ module Taskell.Data.Types.Contributor
     , Contributors
     , ContributorID(..)
     , ContributorIDs
+    , sign
+    , name
+    , email
     ) where
 
 import RIO
@@ -17,7 +20,8 @@ type Contributors = HashMap ContributorID Contributor
 
 data Contributor =
     Contributor
-        { _name :: !Text
+        { _sign :: !Text
+        , _name :: !Text
         , _email :: !Text
         }
     deriving (Eq, Show)

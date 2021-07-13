@@ -45,14 +45,7 @@ spec = do
                          allListsOrder
                          (HM.insert
                               (TaskID 10)
-                              (Task
-                                   "Blah"
-                                   (ParentList (ListID 1))
-                                   ""
-                                   []
-                                   []
-                                   []
-                                   [])
+                              (Task "Blah" (ParentList (ListID 1)) "" False [] [] [] [])
                               allTasks))
         describe "renames task" $ do
             it "rename task" $
@@ -144,8 +137,7 @@ spec = do
                          allListsOrder
                          (HM.fromList
                               [ ( TaskID 2
-                                , task2 & T.tasks .~ [] &
-                                  T.related .~ (TaskID <$> Seq.fromList [3]))
+                                , task2 & T.tasks .~ [] & T.related .~ (TaskID <$> Seq.fromList [3]))
                               , (TaskID 3, task3 & T.related .~ (TaskID <$> Seq.fromList [2]))
                               , (TaskID 4, task4)
                               , (TaskID 5, task5 & T.related .~ [])
