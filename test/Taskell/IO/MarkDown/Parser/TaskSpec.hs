@@ -27,12 +27,12 @@ spec = do
     describe "due" $ do
         it "parses the due date" $ do
             output <- liftIO parse
-            (^. taskDue) <$> output `shouldBe` Right "2021-12-03 12:00"
+            (^. taskDue) <$> output `shouldBe` Right (Just "2021-12-03 12:00")
     describe "description" $ do
         it "parses the description" $ do
             output <- liftIO parse
             (^. taskDescription) <$>
-                output `shouldBe` Right "This is a thing with some stuff\n\nBlah blah blah"
+                output `shouldBe` Right (Just "This is a thing with some stuff\n\nBlah blah blah")
     describe "tasks" $ do
         it "parses the tasks" $ do
             output <- liftIO parse

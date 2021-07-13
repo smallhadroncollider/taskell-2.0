@@ -22,9 +22,9 @@ defaultDictionary = Dictionary "Contributors" "**Due**:" "**Related**:" "**Contr
 data AlmostTask =
     AlmostTask
         { _taskTitle :: !Text
-        , _taskDescription :: !Text
+        , _taskDescription :: !(Maybe Text)
         , _taskComplete :: !Bool
-        , _taskDue :: !Text
+        , _taskDue :: !(Maybe Text)
         , _taskTasks :: ![AlmostTask]
         , _taskTags :: ![Text]
         , _taskRelated :: ![Text]
@@ -33,7 +33,7 @@ data AlmostTask =
     deriving (Eq, Show)
 
 emptyTask :: AlmostTask
-emptyTask = AlmostTask "" "" False "" [] [] [] []
+emptyTask = AlmostTask "" Nothing False Nothing [] [] [] []
 
 makeLenses ''AlmostTask
 

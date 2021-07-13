@@ -9,6 +9,9 @@ import qualified Taskell.Utility.Parser as P
 
 import Taskell.IO.MarkDown.Parser.Types
 
+titleP :: P.Parser Text
+titleP = P.string "### " *> P.line
+
 dueP :: Dictionary -> P.Parser Text
 dueP dictionary = T.strip <$> (P.string (dictionary ^. duePrefix) *> P.line)
 
@@ -20,17 +23,21 @@ tasksP = do
     ttl <- P.line
     pure $ emptyTask & taskTitle .~ ttl & taskComplete .~ complete
 
-descriptionP :: P.Parser Text
-descriptionP = do
-    let nextBlock = [tasksP]
-    lns <- P.manyTill P.line (P.lookAhead (P.choice nextBlock))
+afterDescription :: Dictionary -> P.Parser ()
+afterDescription dictionary =
+    P.choice
+        [void tasksP, void (relatedsP dictionary), void (contributorsP dictionary), void titleP]
+
+descriptionP :: Dictionary -> P.Parser Text
+descriptionP dictionary = do
+    lns <- P.manyTill P.line (P.lookAhead $ afterDescription dictionary)
     pure . T.strip $ T.intercalate "\n" lns
 
 tagP :: P.Parser Text
 tagP = P.string "`#" *> P.takeTo "`"
 
 tagsP :: P.Parser [Text]
-tagsP = tagP `P.sepBy` P.lexeme (P.char ',')
+tagsP = P.lexeme $ tagP `P.sepBy` P.lexeme (P.char ',')
 
 relatedP :: P.Parser Text
 relatedP = P.string "[" <* P.takeTo "](#" *> P.takeTo ")"
@@ -50,13 +57,15 @@ contributorsP dictionary =
 taskP :: Dictionary -> P.Parser AlmostTask
 taskP dictionary =
     P.lexeme $ do
-        ttl <- P.string "### " *> P.line <* P.endOfLine
-        due <- dueP dictionary <* P.endOfLine
-        description <- descriptionP
-        tasks <- P.many' tasksP <* P.endOfLine
+        ttl <- titleP
+        _ <- optional P.endOfLine
+        due <- optional (dueP dictionary)
+        _ <- optional P.endOfLine
+        description <- optional (descriptionP dictionary)
+        tasks <- P.many' tasksP
         tags <- tagsP
-        related <- relatedsP dictionary
-        contributors <- contributorsP dictionary
+        related <- P.option [] $ relatedsP dictionary
+        contributors <- P.option [] $ contributorsP dictionary
         pure $
             emptyTask & taskTitle .~ ttl & taskDescription .~ description & taskDue .~ due &
             taskTasks .~ tasks &
