@@ -12,11 +12,17 @@ module Taskell.Data.Task
     , changeDescription
     , setParentList
     , setParentTask
+    , addContributor
+    , setContributors
     ) where
 
 import RIO
 import qualified RIO.Seq as Seq
 
+import Lens.Micro ((<>~))
+
+import Taskell.Data.Types.Contributor (ContributorID)
+import Taskell.Data.Types.ID (ContributorIDs)
 import Taskell.Data.Types.List (ListID)
 import Taskell.Data.Types.Task
 
@@ -51,3 +57,10 @@ removeFromRelated taskID = related %~ Seq.filter (/= taskID)
 
 removeFromTask :: TaskID -> Update
 removeFromTask taskID = removeFromSubTasks taskID . removeFromRelated taskID
+
+-- contributors
+addContributor :: ContributorID -> Update
+addContributor contributorID = assigned <>~ [contributorID]
+
+setContributors :: ContributorIDs -> Update
+setContributors contributorIDs = assigned .~ contributorIDs

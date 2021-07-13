@@ -8,6 +8,7 @@ module Taskell.Data.Types.Contributor
     , sign
     , name
     , email
+    , hasSign
     ) where
 
 import RIO
@@ -27,3 +28,6 @@ data Contributor =
     deriving (Eq, Show)
 
 makeLenses ''Contributor
+
+hasSign :: Text -> Contributor -> Bool
+hasSign s c = s == c ^. sign

@@ -44,14 +44,3 @@ data AlmostList =
         }
 
 makeLenses ''AlmostList
-
-data NextID =
-    NextID
-        { _nextTaskID :: !Int
-        , _nextListID :: !Int
-        }
-
-makeLenses ''NextID
-
-idStart :: NextID
-idStart = NextID 1 1

@@ -73,3 +73,19 @@ spec = do
                     , (Task.TaskID 8, "Forks for all!!")
                     , (Task.TaskID 9, "Sporks for no one")
                     ]
+    describe "contributors" $ do
+        it "parses the task contributors" $ do
+            input <- liftIO file
+            ((^. Task.assigned) <$>) . (^. Taskell.tasks) <$>
+                parse input defaultDictionary `shouldBe`
+                Right
+                    [ (Task.TaskID 1, [Contributor.ContributorID 1, Contributor.ContributorID 2])
+                    , (Task.TaskID 2, [Contributor.ContributorID 1])
+                    , (Task.TaskID 3, [Contributor.ContributorID 2])
+                    , (Task.TaskID 4, [])
+                    , (Task.TaskID 5, [])
+                    , (Task.TaskID 6, [Contributor.ContributorID 1, Contributor.ContributorID 2])
+                    , (Task.TaskID 7, [])
+                    , (Task.TaskID 8, [])
+                    , (Task.TaskID 9, [])
+                    ]

@@ -16,20 +16,24 @@ module Taskell.Data.Taskell
     , addTaskToList
     , renameTask
     , changeTaskDescription
+    , setTaskContributors
     , moveTaskUp
     , moveTaskDown
     , moveTaskLeft
     , moveTaskRight
     , moveTaskLeftTop
     , moveTaskRightTop
+    , findContributorFromSign
     ) where
 
 import RIO
 import qualified RIO.HashMap as HM
+import qualified RIO.List as L
 import qualified RIO.Seq as Seq
 
 import qualified Taskell.Data.List as TTL
 import qualified Taskell.Data.Task as TTT
+import qualified Taskell.Data.Types.Contributor as TTC
 import qualified Taskell.Data.Types.ID as ID
 import qualified Taskell.Data.Types.List as TTL
 import qualified Taskell.Data.Types.Task as TTT
@@ -123,6 +127,9 @@ renameTask title = updateTask (TTT.rename title)
 changeTaskDescription :: Text -> TTT.TaskID -> Update
 changeTaskDescription title = updateTask (TTT.changeDescription title)
 
+setTaskContributors :: TTC.ContributorIDs -> TTT.TaskID -> Update
+setTaskContributors contributorIDs = updateTask (TTT.setContributors contributorIDs)
+
 moveTaskUp :: TTT.TaskID -> Update
 moveTaskUp taskID taskell = do
     task <- getTask taskID taskell
@@ -188,6 +195,13 @@ removeFromLists taskID taskell = do
 
 removeTasks :: TTT.TaskID -> Update
 removeTasks taskID taskell = removeFromLists taskID taskell >>= removeFromTasks taskID
+
+-- contributors
+findContributorFromSign :: TT.Taskell -> Text -> Maybe TTC.ContributorID
+findContributorFromSign tsk sign = L.headMaybe matches
+  where
+    cs = tsk ^. TT.contributors
+    matches = HM.keys $ HM.filter (TTC.hasSign sign) cs
 
 -- Taskell
 rename :: Text -> Update
