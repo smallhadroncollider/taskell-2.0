@@ -13,7 +13,7 @@ import Taskell.IO.MarkDown.Parser.Utility (titleP)
 dueP :: Dictionary -> P.Parser Text
 dueP dictionary = T.strip <$> (P.string (dictionary ^. duePrefix) *> P.line)
 
-tasksP :: P.Parser AlmostTask
+tasksP :: P.Parser ParsedTask
 tasksP = do
     _ <- P.string "- ["
     complete <- (== 'x') <$> P.choice [P.char ' ', P.char 'x']
@@ -58,7 +58,7 @@ contributorsP dictionary =
         _ <- P.lexeme $ P.string (dictionary ^. contributorsPrefix)
         (P.string "*@" *> P.takeTo "*") `P.sepBy` P.lexeme (P.char ',')
 
-taskP :: Dictionary -> P.Parser AlmostTask
+taskP :: Dictionary -> P.Parser ParsedTask
 taskP dictionary =
     P.lexeme $ do
         ttl <- titleP 3

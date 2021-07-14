@@ -24,6 +24,7 @@ import Taskell.Data.Taskell
 import qualified Taskell.UI.Text.Editor as E
 import qualified Taskell.UI.Text.Split as S
 
+import qualified Taskell.IO.MarkDown.Parser.Convert as C
 import qualified Taskell.IO.MarkDown.Parser.Document as D
 import Taskell.IO.MarkDown.Parser.Types (defaultDictionary)
 
@@ -36,7 +37,8 @@ main :: IO ()
 main = do
     input <- readFileUtf8 "test/Taskell/IO/MarkDown/Parser/document.md"
     defaultMain
-        [ bench "parses" $ whnf (D.parse input) defaultDictionary
+        [ bench "parses" $ whnf (D.parse defaultDictionary) input
+        , bench "reads" $ whnf (C.convert defaultDictionary) input
         , bench "getLists" $ whnf getLists benchData
         , bgroup
               "moveLists"

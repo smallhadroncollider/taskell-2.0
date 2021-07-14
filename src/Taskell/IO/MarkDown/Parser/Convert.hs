@@ -1,18 +1,24 @@
 {-# LANGUAGE TemplateHaskell #-}
 
-module Taskell.IO.MarkDown.Parser.Convert where
+module Taskell.IO.MarkDown.Parser.Convert
+    ( convert
+    ) where
 
 import RIO
+import qualified RIO.HashMap as HM
 import qualified RIO.Seq as Seq
 
 import Lens.Micro ((+~))
 import Lens.Micro.TH (makeLenses)
 
 import qualified Taskell.Data.Taskell as Taskell
+import qualified Taskell.Data.Types.Contributor as Contributor
 import qualified Taskell.Data.Types.List as List
 import qualified Taskell.Data.Types.Task as Task
+import qualified Taskell.Data.Types.Taskell as Taskell
 import qualified Taskell.Error as Error
 
+import Taskell.IO.MarkDown.Parser.Document (parse)
 import Taskell.IO.MarkDown.Parser.Types
 
 -- ID tracking
@@ -34,26 +40,50 @@ idStart :: NextID
 idStart = NextID 1 1
 
 -- conversion
-almostTaskToTaskell ::
+parsedTaskToTaskell ::
        List.ListID
     -> (NextID, Taskell.Taskell)
-    -> AlmostTask
+    -> ParsedTask
     -> Error.EitherError (NextID, Taskell.Taskell)
-almostTaskToTaskell listID (ids, tsk) t = do
+parsedTaskToTaskell listID (ids, tsk) t = do
     let taskID = Task.TaskID (ids ^. nextTaskID)
     updated <- Taskell.addTaskToList (t ^. taskTitle) taskID listID tsk
-    let contributors =
+    let conts =
             Seq.fromList . catMaybes $
             Taskell.findContributorFromSign tsk <$> (t ^. taskContributors)
-    updated' <- Taskell.setTaskContributors contributors taskID updated
+    updated' <- Taskell.setTaskContributors conts taskID updated
     pure (incTask ids, updated')
 
-almostListToTaskell ::
-       (NextID, Taskell.Taskell) -> AlmostList -> Error.EitherError (NextID, Taskell.Taskell)
-almostListToTaskell (ids, tsk) l = do
+parsedListToTaskell ::
+       (NextID, Taskell.Taskell) -> ParsedList -> Error.EitherError (NextID, Taskell.Taskell)
+parsedListToTaskell (ids, tsk) l = do
     let listID = List.ListID (ids ^. nextListID)
     updated <- Taskell.addList (l ^. listTitle) listID tsk
-    foldM (almostTaskToTaskell listID) (incList ids, updated) (l ^. listTasks)
+    foldM (parsedTaskToTaskell listID) (incList ids, updated) (l ^. listTasks)
 
-almostsToTaskell :: Taskell.Taskell -> [AlmostList] -> Error.EitherError Taskell.Taskell
-almostsToTaskell tsk almostLists = snd <$> foldM almostListToTaskell (idStart, tsk) almostLists
+parsedListsToTaskell :: Taskell.Taskell -> [ParsedList] -> Error.EitherError Taskell.Taskell
+parsedListsToTaskell tsk parsedLists = snd <$> foldM parsedListToTaskell (idStart, tsk) parsedLists
+
+parsedContributorToContributor :: ParsedContributor -> Contributor.Contributor
+parsedContributorToContributor parsed =
+    Contributor.Contributor
+        (parsed ^. contributorSign)
+        (parsed ^. contributorName)
+        (parsed ^. contributorEmail)
+
+contributors :: [ParsedContributor] -> Contributor.Contributors
+contributors parsed = HM.fromList (zip ids cs)
+  where
+    cs = parsedContributorToContributor <$> parsed
+    ids = Contributor.ContributorID <$> [1 ..]
+
+parsedToTaskell :: ParsedTaskell -> Error.EitherError Taskell.Taskell
+parsedToTaskell parsed = do
+    let tsk =
+            Taskell.create (parsed ^. taskellTitle) &
+            Taskell.description .~ (parsed ^. taskellDescription) &
+            Taskell.contributors .~ contributors (parsed ^. taskellContributors)
+    parsedListsToTaskell tsk (parsed ^. taskellLists)
+
+convert :: Dictionary -> Text -> Error.EitherError Taskell.Taskell
+convert dictionary input = either Error.e parsedToTaskell $ parse dictionary input

@@ -14,7 +14,7 @@ import Taskell.IO.MarkDown.Parser.Types
 file :: IO Text
 file = readFileUtf8 "test/Taskell/IO/MarkDown/Parser/task.md"
 
-parse :: IO (Either String AlmostTask)
+parse :: IO (Either String ParsedTask)
 parse = P.parseOnly (taskP defaultDictionary) <$> file
 
 -- tests
