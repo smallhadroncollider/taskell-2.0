@@ -34,10 +34,10 @@ testData = tmpData
 spec :: Spec
 spec = do
     describe "Taskell Lists" $ do
-        it "gets lists" $ getLists testData `shouldBe` Right (Seq.fromList [list2, list1])
+        it "gets lists" $ getLists testData `shouldBe` Right (Seq.fromList [list1, list2])
         it "gets lists with IDs" $
             getListsWithIDs testData `shouldBe`
-            Right (Seq.fromList [(ListID 2, list2), (ListID 1, list1)])
+            Right (Seq.fromList [(ListID 1, list1), (ListID 2, list2)])
         describe "adds lists" $ do
             it "list 3" $
                 addList "Third List" (ListID 3) testData `shouldBe`
@@ -51,7 +51,7 @@ spec = do
                               , (ListID 2, list2)
                               , (ListID 3, List "Third List" [])
                               ])
-                         (Seq.fromList [ListID 2, ListID 1, ListID 3])
+                         (Seq.fromList [ListID 1, ListID 2, ListID 3])
                          allTasks)
         describe "removes lists" $ do
             it "list 1" $
@@ -65,14 +65,14 @@ spec = do
                          (Seq.fromList [ListID 2])
                          allTasks)
         describe "reorders lists" $ do
-            it "list 1 left" $
-                moveListLeft (ListID 1) testData `shouldBe`
-                Right (testData & listsOrder .~ Seq.fromList [ListID 1, ListID 2])
-            it "list 2 left" $ moveListLeft (ListID 2) testData `shouldBe` Right testData
-            it "list 1 right" $ moveListRight (ListID 1) testData `shouldBe` Right testData
-            it "list 2 right" $
-                moveListRight (ListID 2) testData `shouldBe`
-                Right (testData & listsOrder .~ Seq.fromList [ListID 1, ListID 2])
+            it "list 2 left" $
+                moveListLeft (ListID 2) testData `shouldBe`
+                Right (testData & listsOrder .~ Seq.fromList [ListID 2, ListID 1])
+            it "list 1 left" $ moveListLeft (ListID 1) testData `shouldBe` Right testData
+            it "list 2 right" $ moveListRight (ListID 2) testData `shouldBe` Right testData
+            it "list 1 right" $
+                moveListRight (ListID 1) testData `shouldBe`
+                Right (testData & listsOrder .~ Seq.fromList [ListID 2, ListID 1])
         describe "renames lists" $ do
             it "list 1" $
                 renameList "List 1 Changed" (ListID 1) testData `shouldBe`
@@ -88,7 +88,7 @@ spec = do
         describe "gets tasks for lists" $ do
             it "list 1" $
                 tasksForList (ListID 1) testData `shouldBe`
-                Right (Seq.fromList [task1, task5, task3])
+                Right (Seq.fromList [task1, task3, task5])
             it "list 2" $
                 tasksForList (ListID 2) testData `shouldBe` Right (Seq.fromList [task2, task4])
             it "no list" $

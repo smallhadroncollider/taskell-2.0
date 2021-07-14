@@ -39,7 +39,7 @@ spec = do
                          allContributors
                          (HM.fromList
                               [ ( ListID 1
-                                , list1 & L.tasks .~ (TaskID <$> Seq.fromList [1, 5, 3, 10]))
+                                , list1 & L.tasks .~ (TaskID <$> Seq.fromList [1, 3, 5, 10]))
                               , (ListID 2, list2)
                               ])
                          allListsOrder
@@ -57,65 +57,65 @@ spec = do
                 Right
                     (testData &
                      Taskell.lists %~
-                     HM.insert (ListID 1) (list1 & L.tasks .~ (TaskID <$> Seq.fromList [1, 3, 5])))
+                     HM.insert (ListID 1) (list1 & L.tasks .~ (TaskID <$> Seq.fromList [3, 1, 5])))
             it "moves down" $
                 moveTaskDown (TaskID 1) testData `shouldBe`
                 Right
                     (testData &
                      Taskell.lists %~
-                     HM.insert (ListID 1) (list1 & L.tasks .~ (TaskID <$> Seq.fromList [5, 1, 3])))
+                     HM.insert (ListID 1) (list1 & L.tasks .~ (TaskID <$> Seq.fromList [3, 1, 5])))
             it "moves left (to bottom)" $
-                moveTaskLeft (TaskID 1) testData `shouldBe`
+                moveTaskLeft (TaskID 2) testData `shouldBe`
                 Right
                     (testData &
                      Taskell.tasks %~
-                     HM.insert (TaskID 1) (task1 & T.parent .~ ParentList (ListID 2)) &
+                     HM.insert (TaskID 2) (task2 & T.parent .~ ParentList (ListID 1)) &
                      Taskell.lists .~
                      HM.fromList
-                         [ (ListID 1, list1 & L.tasks .~ (TaskID <$> Seq.fromList [5, 3]))
-                         , (ListID 2, list2 & L.tasks .~ (TaskID <$> Seq.fromList [2, 4, 1]))
+                         [ (ListID 1, list1 & L.tasks .~ (TaskID <$> Seq.fromList [1, 3, 5, 2]))
+                         , (ListID 2, list2 & L.tasks .~ (TaskID <$> Seq.fromList [4]))
                          ])
             it "moves left (to bottom) - no change" $
-                moveTaskLeft (TaskID 2) testData `shouldBe` Right testData
+                moveTaskLeft (TaskID 1) testData `shouldBe` Right testData
             it "moves right (to bottom)" $
-                moveTaskRight (TaskID 2) testData `shouldBe`
-                Right
-                    (testData &
-                     Taskell.tasks %~
-                     HM.insert (TaskID 2) (task2 & T.parent .~ ParentList (ListID 1)) &
-                     Taskell.lists .~
-                     HM.fromList
-                         [ (ListID 1, list1 & L.tasks .~ (TaskID <$> Seq.fromList [1, 5, 3, 2]))
-                         , (ListID 2, list2 & L.tasks .~ (TaskID <$> Seq.fromList [4]))
-                         ])
-            it "moves right (to bottom) - no change" $
-                moveTaskRight (TaskID 1) testData `shouldBe` Right testData
-            it "moves left (to top)" $
-                moveTaskLeftTop (TaskID 1) testData `shouldBe`
+                moveTaskRight (TaskID 1) testData `shouldBe`
                 Right
                     (testData &
                      Taskell.tasks %~
                      HM.insert (TaskID 1) (task1 & T.parent .~ ParentList (ListID 2)) &
                      Taskell.lists .~
                      HM.fromList
-                         [ (ListID 1, list1 & L.tasks .~ (TaskID <$> Seq.fromList [5, 3]))
-                         , (ListID 2, list2 & L.tasks .~ (TaskID <$> Seq.fromList [1, 2, 4]))
+                         [ (ListID 1, list1 & L.tasks .~ (TaskID <$> Seq.fromList [3, 5]))
+                         , (ListID 2, list2 & L.tasks .~ (TaskID <$> Seq.fromList [2, 4, 1]))
                          ])
-            it "moves left (to top) - no change" $
-                moveTaskLeftTop (TaskID 2) testData `shouldBe` Right testData
-            it "moves right (to top)" $
-                moveTaskRightTop (TaskID 2) testData `shouldBe`
+            it "moves right (to bottom) - no change" $
+                moveTaskRight (TaskID 2) testData `shouldBe` Right testData
+            it "moves left (to top)" $
+                moveTaskLeftTop (TaskID 2) testData `shouldBe`
                 Right
                     (testData &
                      Taskell.tasks %~
                      HM.insert (TaskID 2) (task2 & T.parent .~ ParentList (ListID 1)) &
                      Taskell.lists .~
                      HM.fromList
-                         [ (ListID 1, list1 & L.tasks .~ (TaskID <$> Seq.fromList [2, 1, 5, 3]))
+                         [ (ListID 1, list1 & L.tasks .~ (TaskID <$> Seq.fromList [2, 1, 3, 5]))
                          , (ListID 2, list2 & L.tasks .~ (TaskID <$> Seq.fromList [4]))
                          ])
+            it "moves left (to top) - no change" $
+                moveTaskLeftTop (TaskID 1) testData `shouldBe` Right testData
+            it "moves right (to top)" $
+                moveTaskRightTop (TaskID 1) testData `shouldBe`
+                Right
+                    (testData &
+                     Taskell.tasks %~
+                     HM.insert (TaskID 1) (task1 & T.parent .~ ParentList (ListID 2)) &
+                     Taskell.lists .~
+                     HM.fromList
+                         [ (ListID 1, list1 & L.tasks .~ (TaskID <$> Seq.fromList [3, 5]))
+                         , (ListID 2, list2 & L.tasks .~ (TaskID <$> Seq.fromList [1, 2, 4]))
+                         ])
             it "moves right (to top) - no change" $
-                moveTaskRightTop (TaskID 1) testData `shouldBe` Right testData
+                moveTaskRightTop (TaskID 2) testData `shouldBe` Right testData
         describe "changes task description" $ do
             it "change description" $
                 changeTaskDescription "Blah" (TaskID 1) testData `shouldBe`
@@ -131,7 +131,7 @@ spec = do
                          "Some test data"
                          allContributors
                          (HM.fromList
-                              [ (ListID 1, list1 & L.tasks .~ (TaskID <$> Seq.fromList [5, 3]))
+                              [ (ListID 1, list1 & L.tasks .~ (TaskID <$> Seq.fromList [3, 5]))
                               , (ListID 2, list2)
                               ])
                          allListsOrder

@@ -113,7 +113,7 @@ allTasks =
 
 -- lists
 list1, list2 :: List
-list1 = List "First List" (TaskID <$> Seq.fromList [1, 5, 3])
+list1 = List "First List" (TaskID <$> Seq.fromList [1, 3, 5])
 
 list2 = List "Second List" (TaskID <$> Seq.fromList [2, 4])
 
@@ -121,7 +121,7 @@ allLists :: Lists
 allLists = HM.fromList [(ListID 1, list1), (ListID 2, list2)]
 
 allListsOrder :: ListIDs
-allListsOrder = Seq.fromList [ListID 2, ListID 1]
+allListsOrder = Seq.fromList [ListID 1, ListID 2]
 
 -- full
 tmpData :: Taskell
