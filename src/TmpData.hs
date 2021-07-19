@@ -11,11 +11,11 @@ import Taskell.Data.Types.Task as T (Parent(..), Task(..), TaskID(..), Tasks)
 
 -- contributors
 contributor1, contributor2, contributor3 :: Contributor
-contributor1 = Contributor "@Bob" "Bob" "bob@bob.com"
+contributor1 = Contributor "Bob" "Bob" "bob@bob.com"
 
-contributor2 = Contributor "@Jim" "Jim" "jim@jim.com"
+contributor2 = Contributor "Jim" "Jim" "jim@jim.com"
 
-contributor3 = Contributor "@Jenny" "Jenny" "jenny@jenny.com"
+contributor3 = Contributor "Jenny" "Jenny" "jenny@jenny.com"
 
 allContributors :: Contributors
 allContributors =

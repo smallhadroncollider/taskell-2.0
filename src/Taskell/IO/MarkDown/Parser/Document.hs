@@ -8,6 +8,7 @@ import qualified Taskell.Utility.Parser as P
 import Taskell.IO.MarkDown.Parser.Task
 import Taskell.IO.MarkDown.Parser.Types
 import Taskell.IO.MarkDown.Parser.Utility (titleP)
+import Taskell.IO.MarkDown.Types
 
 descriptionP :: Text -> P.Parser Text
 descriptionP cTitle =

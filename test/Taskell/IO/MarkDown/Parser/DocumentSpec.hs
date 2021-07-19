@@ -8,6 +8,7 @@ import Test.Hspec
 
 import Taskell.IO.MarkDown.Parser.Document (parse)
 import Taskell.IO.MarkDown.Parser.Types
+import Taskell.IO.MarkDown.Types
 
 file :: IO Text
 file = readFileUtf8 "test/Taskell/IO/MarkDown/Parser/document.md"

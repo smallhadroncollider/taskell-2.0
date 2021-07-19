@@ -20,6 +20,7 @@ import qualified Taskell.Error as Error
 
 import Taskell.IO.MarkDown.Parser.Document (parse)
 import Taskell.IO.MarkDown.Parser.Types
+import Taskell.IO.MarkDown.Types
 
 -- ID tracking
 data NextID =

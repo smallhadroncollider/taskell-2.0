@@ -9,6 +9,7 @@ import qualified Taskell.Utility.Parser as P
 
 import Taskell.IO.MarkDown.Parser.Types
 import Taskell.IO.MarkDown.Parser.Utility (titleP)
+import Taskell.IO.MarkDown.Types
 
 dueP :: Dictionary -> P.Parser Text
 dueP dictionary = T.strip <$> (P.string (dictionary ^. duePrefix) *> P.line)

@@ -10,6 +10,7 @@ import qualified Taskell.Utility.Parser as P
 
 import Taskell.IO.MarkDown.Parser.Task
 import Taskell.IO.MarkDown.Parser.Types
+import Taskell.IO.MarkDown.Types (defaultDictionary)
 
 file :: IO Text
 file = readFileUtf8 "test/Taskell/IO/MarkDown/Parser/task.md"

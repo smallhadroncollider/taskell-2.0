@@ -13,7 +13,7 @@ import qualified Taskell.Data.Types.Taskell as Taskell
 import qualified Taskell.Error as Error
 
 import Taskell.IO.MarkDown.Parser.Convert (convert)
-import Taskell.IO.MarkDown.Parser.Types (defaultDictionary)
+import Taskell.IO.MarkDown.Types (defaultDictionary)
 
 convert' :: IO (Error.EitherError Taskell.Taskell)
 convert' = do
