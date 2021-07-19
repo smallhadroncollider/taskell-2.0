@@ -12,6 +12,11 @@ import Taskell.IO.MarkDown.Types (Dictionary, contributorsTitle)
 
 type DictionaryReader = Reader Dictionary
 
+type Serializer = DictionaryReader (Maybe Utf8Builder)
+
+s :: Utf8Builder -> Serializer
+s = pure . Just
+
 contributorS :: Contributor.Contributor -> DictionaryReader Utf8Builder
 contributorS cont = do
     let sign = cont ^. Contributor.sign
@@ -19,28 +24,29 @@ contributorS cont = do
     let email = cont ^. Contributor.email
     pure $ "- @" <> display sign <> ": " <> display name <> " (" <> display email <> ")" <> "\n"
 
-contributorsS :: Taskell.Taskell -> DictionaryReader Utf8Builder
-contributorsS tsk = do
-    title <- (^. contributorsTitle) <$> ask
-    let sorted = L.sortOn (^. Contributor.sign) $ toList (tsk ^. Taskell.contributors)
-    conts <- traverse contributorS sorted
-    pure $ "## " <> display title <> "\n\n" <> mconcat conts
+contributorsS :: Taskell.Taskell -> Serializer
+contributorsS tsk =
+    case tsk ^. Taskell.contributors of
+        [] -> pure Nothing
+        contributors -> do
+            title <- (^. contributorsTitle) <$> ask
+            let sorted = L.sortOn (^. Contributor.sign) $ toList contributors
+            conts <- traverse contributorS sorted
+            s $ "## " <> display title <> "\n\n" <> mconcat conts
 
-descriptionS :: Taskell.Taskell -> DictionaryReader Utf8Builder
-descriptionS tsk = pure $ display description <> "\n"
-  where
-    description = tsk ^. Taskell.description
+descriptionS :: Taskell.Taskell -> Serializer
+descriptionS tsk =
+    case tsk ^. Taskell.description of
+        "" -> pure Nothing
+        description -> s $ display description <> "\n"
 
-titleS :: Taskell.Taskell -> DictionaryReader Utf8Builder
-titleS tsk = pure $ "# " <> display (tsk ^. Taskell.title) <> "\n"
-
-blankS :: Taskell.Taskell -> DictionaryReader Utf8Builder
-blankS _ = pure $ "\n"
+titleS :: Taskell.Taskell -> Serializer
+titleS tsk = s $ "# " <> display (tsk ^. Taskell.title) <> "\n"
 
 serialize' :: Taskell.Taskell -> DictionaryReader Utf8Builder
 serialize' tsk = do
-    parts <- traverse ($ tsk) [titleS, blankS, descriptionS, blankS, contributorsS]
-    pure $ Utf8Builder "" <> mconcat parts
+    parts <- traverse ($ tsk) [titleS, descriptionS, contributorsS]
+    pure $ "" <> mconcat (L.intersperse "\n" (catMaybes parts))
 
 serialize :: Dictionary -> Taskell.Taskell -> Utf8Builder
 serialize dic tsk = runReader (serialize' tsk) dic
