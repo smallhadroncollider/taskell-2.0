@@ -1,6 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 
-module Taskell.IO.MarkDown.Parser.Convert
+module Taskell.IO.MarkDown.Convert.FromSerialized
     ( convert
     ) where
 

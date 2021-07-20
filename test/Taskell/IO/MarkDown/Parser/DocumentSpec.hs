@@ -7,7 +7,6 @@ import RIO
 import Test.Hspec
 
 import Taskell.IO.MarkDown.Parser.Document (parse)
-import Taskell.IO.MarkDown.Parser.Types
 import Taskell.IO.MarkDown.Types
 
 file :: IO Text
@@ -32,8 +31,8 @@ spec = do
             (^. taskellContributors) <$>
                 parse defaultDictionary input `shouldBe`
                 Right
-                    [ ParsedContributor "Mark" "Mark Wales" "mark@smallhadroncollider.com"
-                    , ParsedContributor "Jess" "Jess Munroe" "jess@munroesoft.com"
+                    [ SerializedContributor "Mark" "Mark Wales" "mark@smallhadroncollider.com"
+                    , SerializedContributor "Jess" "Jess Munroe" "jess@munroesoft.com"
                     ]
     describe "lists" $ do
         it "parses the list titles" $ do

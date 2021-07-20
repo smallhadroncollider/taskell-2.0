@@ -24,7 +24,7 @@ import Taskell.Data.Taskell
 import qualified Taskell.UI.Text.Editor as E
 import qualified Taskell.UI.Text.Split as S
 
-import qualified Taskell.IO.MarkDown.Parser.Convert as C
+import qualified Taskell.IO.MarkDown.Convert.FromSerialized as C
 import qualified Taskell.IO.MarkDown.Parser.Document as D
 import qualified Taskell.IO.MarkDown.Serializer.Serialize as Ser
 import Taskell.IO.MarkDown.Types (defaultDictionary)

@@ -1,4 +1,4 @@
-module Taskell.IO.MarkDown.Parser.ConvertSpec
+module Taskell.IO.MarkDown.Convert.FromSerializedSpec
     ( spec
     ) where
 
@@ -12,7 +12,7 @@ import qualified Taskell.Data.Types.Task as Task
 import qualified Taskell.Data.Types.Taskell as Taskell
 import qualified Taskell.Error as Error
 
-import Taskell.IO.MarkDown.Parser.Convert (convert)
+import Taskell.IO.MarkDown.Convert.FromSerialized (convert)
 import Taskell.IO.MarkDown.Types (defaultDictionary)
 
 convert' :: IO (Error.EitherError Taskell.Taskell)

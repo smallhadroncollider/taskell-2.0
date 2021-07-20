@@ -7,14 +7,13 @@ import qualified RIO.Text as T
 
 import qualified Taskell.Utility.Parser as P
 
-import Taskell.IO.MarkDown.Parser.Types
 import Taskell.IO.MarkDown.Parser.Utility (titleP)
 import Taskell.IO.MarkDown.Types
 
 dueP :: Dictionary -> P.Parser Text
 dueP dictionary = T.strip <$> (P.string (dictionary ^. duePrefix) *> P.line)
 
-tasksP :: P.Parser ParsedTask
+tasksP :: P.Parser SerializedTask
 tasksP = do
     _ <- P.string "- ["
     complete <- (== 'x') <$> P.choice [P.char ' ', P.char 'x']
@@ -59,7 +58,7 @@ contributorsP dictionary =
         _ <- P.lexeme $ P.string (dictionary ^. contributorsPrefix)
         (P.string "*@" *> P.takeTo "*") `P.sepBy` P.lexeme (P.char ',')
 
-taskP :: Dictionary -> P.Parser ParsedTask
+taskP :: Dictionary -> P.Parser SerializedTask
 taskP dictionary =
     P.lexeme $ do
         ttl <- titleP 3

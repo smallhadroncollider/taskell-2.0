@@ -9,13 +9,12 @@ import Test.Hspec
 import qualified Taskell.Utility.Parser as P
 
 import Taskell.IO.MarkDown.Parser.Task
-import Taskell.IO.MarkDown.Parser.Types
-import Taskell.IO.MarkDown.Types (defaultDictionary)
+import Taskell.IO.MarkDown.Types
 
 file :: IO Text
 file = readFileUtf8 "test/Taskell/IO/MarkDown/Parser/task.md"
 
-parse :: IO (Either String ParsedTask)
+parse :: IO (Either String SerializedTask)
 parse = P.parseOnly (taskP defaultDictionary) <$> file
 
 -- tests
