@@ -63,7 +63,7 @@ taskP dictionary =
     P.lexeme $ do
         ttl <- titleP 3
         _ <- optional P.endOfLine
-        due <- optional (dueP dictionary)
+        _ <- optional (dueP dictionary)
         _ <- optional P.endOfLine
         description <- optional (descriptionP dictionary)
         tasks <- P.many' tasksP
@@ -71,8 +71,7 @@ taskP dictionary =
         related <- P.option [] $ relatedsP dictionary
         contributors <- P.option [] $ contributorsP dictionary
         pure $
-            emptyTask & taskTitle .~ ttl & taskDescription .~ description & taskDue .~ due &
-            taskTasks .~ tasks &
+            emptyTask & taskTitle .~ ttl & taskDescription .~ description & taskTasks .~ tasks &
             taskTags .~ tags &
             taskRelated .~ related &
             taskContributors .~ contributors

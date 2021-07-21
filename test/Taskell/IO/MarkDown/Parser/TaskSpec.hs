@@ -24,10 +24,10 @@ spec = do
         it "parses the title" $ do
             output <- liftIO parse
             (^. taskTitle) <$> output `shouldBe` Right "Hello Mum"
-    describe "due" $ do
-        it "parses the due date" $ do
-            output <- liftIO parse
-            (^. taskDue) <$> output `shouldBe` Right (Just "2021-12-03 12:00")
+    -- describe "due" $ do
+    --     it "parses the due date" $ do
+    --         output <- liftIO parse
+    --         (^. taskDue) <$> output `shouldBe` Right (Just "2021-12-03 12:00")
     describe "description" $ do
         it "parses the description" $ do
             output <- liftIO parse

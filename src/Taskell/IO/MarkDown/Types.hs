@@ -26,7 +26,7 @@ data SerializedTask =
         { _taskTitle :: !Text
         , _taskDescription :: !(Maybe Text)
         , _taskComplete :: !Bool
-        , _taskDue :: !(Maybe Text)
+        -- , _taskDue :: !(Maybe Text)
         , _taskTasks :: ![SerializedTask]
         , _taskTags :: ![Text]
         , _taskRelated :: ![Text]
@@ -35,7 +35,7 @@ data SerializedTask =
     deriving (Eq, Show)
 
 emptyTask :: SerializedTask
-emptyTask = SerializedTask "" Nothing False Nothing [] [] [] []
+emptyTask = SerializedTask "" Nothing False [] [] [] []
 
 makeLenses ''SerializedTask
 
