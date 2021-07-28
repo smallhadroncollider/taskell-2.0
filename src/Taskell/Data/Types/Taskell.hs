@@ -8,6 +8,7 @@ module Taskell.Data.Types.Taskell
     , lists
     , listsOrder
     , tasks
+    , tags
     , create
     ) where
 
@@ -17,6 +18,7 @@ import Lens.Micro.TH (makeLenses)
 
 import Taskell.Data.Types.Contributor (Contributors)
 import Taskell.Data.Types.List (ListIDs, Lists)
+import Taskell.Data.Types.Tag (Tags)
 import Taskell.Data.Types.Task (Tasks)
 
 data Taskell =
@@ -27,10 +29,11 @@ data Taskell =
         , _lists :: !Lists
         , _listsOrder :: !ListIDs
         , _tasks :: !Tasks
+        , _tags :: !Tags
         }
     deriving (Eq, Show)
 
 makeLenses ''Taskell
 
 create :: Text -> Taskell
-create tle = Taskell tle "" [] [] [] []
+create tle = Taskell tle "" [] [] [] [] []

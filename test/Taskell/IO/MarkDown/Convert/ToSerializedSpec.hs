@@ -3,24 +3,83 @@ module Taskell.IO.MarkDown.Convert.ToSerializedSpec
     ) where
 
 import RIO
+import qualified RIO.List as L
 
 import Test.Hspec
+
+import qualified Taskell.Error as Error
 
 import Taskell.IO.MarkDown.Convert.ToSerialized (convert)
 import Taskell.IO.MarkDown.Types
 
 import TmpData
 
+smoosh :: Error.EitherError (Maybe a) -> Error.EitherError a
+smoosh (Left a) = Left a
+smoosh (Right Nothing) = Error.e "Nothing"
+smoosh (Right (Just a)) = Right a
+
 -- tests
 spec :: Spec
 spec = do
     describe "title" $ do
-        it "gets the title" $ do convert tmpData ^. taskellTitle `shouldBe` "Test"
+        it "gets the title" $ do (^. taskellTitle) <$> convert tmpData `shouldBe` Right "Test"
+    describe "description" $ do
         it "gets the description" $ do
-            convert tmpData ^. taskellDescription `shouldBe` "Some test data"
+            (^. taskellDescription) <$> convert tmpData `shouldBe` Right "Some test data"
+    describe "contributors" $ do
         it "sorts the contributors alphabetically by name" $ do
-            convert tmpData ^. taskellContributors `shouldBe`
-                [ SerializedContributor "Bob" "Bob" "bob@bob.com"
-                , SerializedContributor "Jenny" "Jenny" "jenny@jenny.com"
-                , SerializedContributor "Jim" "Jim" "jim@jim.com"
-                ]
+            (^. taskellContributors) <$>
+                convert tmpData `shouldBe`
+                Right
+                    [ SerializedContributor "Bob" "Bob" "bob@bob.com"
+                    , SerializedContributor "Jenny" "Jenny" "jenny@jenny.com"
+                    , SerializedContributor "Jim" "Jim" "jim@jim.com"
+                    ]
+    describe "lists" $ do
+        let lists = (^. taskellLists) <$> convert tmpData
+        let firstList = smoosh $ L.headMaybe <$> lists
+        it "sorts lists correctly" $ do (^. listTitle) <$> firstList `shouldBe` Right "First List"
+        it "adds correct number of tasks" $ do
+            length . (^. listTasks) <$> firstList `shouldBe` Right 3
+    describe "tasks" $ do
+        let lists = (^. taskellLists) <$> convert tmpData
+        let firstList = smoosh $ L.headMaybe <$> lists
+        let firstTask = smoosh $ L.headMaybe . (^. listTasks) <$> firstList
+        it "has correct title" $ do (^. taskTitle) <$> firstTask `shouldBe` Right "First Task"
+        it "has correct description" $ do
+            (^. taskDescription) <$> firstTask `shouldBe` Right (Just "Do first thing")
+        it "has correct completion status" $ do
+            (^. taskComplete) <$> firstTask `shouldBe` Right False
+        it "has contributors" $ do
+            (^. taskContributors) <$> firstTask `shouldBe` Right ["Bob", "Jim"]
+        it "has tags" $ do (^. taskTags) <$> firstTask `shouldBe` Right ["fish", "cow"]
+        it "has sub-tasks" $ do
+            (^. taskTasks) <$>
+                firstTask `shouldBe`
+                Right
+                    [ SerializedTask
+                          "Sub Task"
+                          (Just "Sub task")
+                          False
+                          [ SerializedTask
+                                "Sub Sub Task"
+                                (Just "Sub sub task")
+                                False
+                                [ SerializedTask
+                                      "Sub Sub Sub Task"
+                                      (Just "Sub sub sub task")
+                                      False
+                                      []
+                                      []
+                                      []
+                                      []
+                                ]
+                                []
+                                []
+                                []
+                          ]
+                          []
+                          []
+                          []
+                    ]

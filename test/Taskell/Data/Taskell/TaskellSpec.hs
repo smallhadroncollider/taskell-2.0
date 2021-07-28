@@ -27,7 +27,8 @@ spec = do
                          allContributors
                          allLists
                          allListsOrder
-                         allTasks)
+                         allTasks
+                         allTags)
         describe "changes description" $ do
             it "changes description" $
                 changeDescription "Some test data changed" testData `shouldBe`
@@ -38,4 +39,5 @@ spec = do
                          allContributors
                          allLists
                          allListsOrder
-                         allTasks)
+                         allTasks
+                         allTags)

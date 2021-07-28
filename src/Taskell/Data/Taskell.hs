@@ -14,6 +14,7 @@ module Taskell.Data.Taskell
     , removeList
     , addList
     , addTaskToList
+    , getTask
     , renameTask
     , changeTaskDescription
     , setTaskContributors
@@ -24,6 +25,8 @@ module Taskell.Data.Taskell
     , moveTaskLeftTop
     , moveTaskRightTop
     , findContributorFromSign
+    , getContributor
+    , getTag
     ) where
 
 import RIO
@@ -36,6 +39,7 @@ import qualified Taskell.Data.Task as TTT
 import qualified Taskell.Data.Types.Contributor as TTC
 import qualified Taskell.Data.Types.ID as ID
 import qualified Taskell.Data.Types.List as TTL
+import qualified Taskell.Data.Types.Tag as Tag
 import qualified Taskell.Data.Types.Task as TTT
 import qualified Taskell.Data.Types.Taskell as TT
 
@@ -202,6 +206,17 @@ findContributorFromSign tsk sign = L.headMaybe matches
   where
     cs = tsk ^. TT.contributors
     matches = HM.keys $ HM.filter (TTC.hasSign sign) cs
+
+getContributor :: TTC.ContributorID -> TT.Taskell -> Error.EitherError TTC.Contributor
+getContributor contributorID taskell =
+    Error.mEither
+        ("Unknown reference: " <> tshow contributorID)
+        (HM.lookup contributorID (taskell ^. TT.contributors))
+
+--tags
+getTag :: Tag.TagID -> TT.Taskell -> Error.EitherError Tag.Tag
+getTag tagID taskell =
+    Error.mEither ("Unknown reference: " <> tshow tagID) (HM.lookup tagID (taskell ^. TT.tags))
 
 -- Taskell
 rename :: Text -> Update

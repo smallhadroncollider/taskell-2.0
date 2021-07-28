@@ -24,7 +24,8 @@ import Taskell.Data.Taskell
 import qualified Taskell.UI.Text.Editor as E
 import qualified Taskell.UI.Text.Split as S
 
-import qualified Taskell.IO.MarkDown.Convert.FromSerialized as C
+import qualified Taskell.IO.MarkDown.Convert.FromSerialized as FC
+import qualified Taskell.IO.MarkDown.Convert.ToSerialized as TC
 import qualified Taskell.IO.MarkDown.Parser.Document as D
 import qualified Taskell.IO.MarkDown.Serializer.Serialize as Ser
 import Taskell.IO.MarkDown.Types (defaultDictionary)
@@ -39,8 +40,9 @@ main = do
     input <- readFileUtf8 "test/Taskell/IO/MarkDown/Parser/document.md"
     defaultMain
         [ bench "serializes" $ whnf (Ser.serialize defaultDictionary) benchData
+        , bench "converts" $ whnf TC.convert benchData
         , bench "parses" $ whnf (D.parse defaultDictionary) input
-        , bench "reads" $ whnf (C.convert defaultDictionary) input
+        , bench "reads" $ whnf (FC.convert defaultDictionary) input
         , bench "getLists" $ whnf getLists benchData
         , bgroup
               "moveLists"

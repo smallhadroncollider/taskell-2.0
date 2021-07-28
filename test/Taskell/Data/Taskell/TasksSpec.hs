@@ -46,7 +46,8 @@ spec = do
                          (HM.insert
                               (TaskID 10)
                               (Task "Blah" (ParentList (ListID 1)) "" False [] [] [] [])
-                              allTasks))
+                              allTasks)
+                         allTags)
         describe "renames task" $ do
             it "rename task" $
                 renameTask "Blah" (TaskID 1) testData `shouldBe`
@@ -141,6 +142,7 @@ spec = do
                               , (TaskID 3, task3 & T.related .~ (TaskID <$> Seq.fromList [2]))
                               , (TaskID 4, task4)
                               , (TaskID 5, task5 & T.related .~ [])
-                              ]))
+                              ])
+                         allTags)
             it "no task" $
                 removeTasks (TaskID 99) testData `shouldBe` Error.e "Unknown reference: TaskID 99"

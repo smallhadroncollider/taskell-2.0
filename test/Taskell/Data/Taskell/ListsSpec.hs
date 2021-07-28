@@ -52,7 +52,8 @@ spec = do
                               , (ListID 3, List "Third List" [])
                               ])
                          (Seq.fromList [ListID 1, ListID 2, ListID 3])
-                         allTasks)
+                         allTasks
+                         allTags)
         describe "removes lists" $ do
             it "list 1" $
                 removeList (ListID 1) testData `shouldBe`
@@ -63,7 +64,8 @@ spec = do
                          allContributors
                          (HM.fromList [(ListID 2, list2)])
                          (Seq.fromList [ListID 2])
-                         allTasks)
+                         allTasks
+                         allTags)
         describe "reorders lists" $ do
             it "list 2 left" $
                 moveListLeft (ListID 2) testData `shouldBe`
@@ -84,7 +86,8 @@ spec = do
                          (HM.fromList
                               [(ListID 1, list1 & L.title .~ "List 1 Changed"), (ListID 2, list2)])
                          allListsOrder
-                         allTasks)
+                         allTasks
+                         allTags)
         describe "gets tasks for lists" $ do
             it "list 1" $
                 tasksForList (ListID 1) testData `shouldBe`

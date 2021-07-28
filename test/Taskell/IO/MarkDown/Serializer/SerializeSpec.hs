@@ -16,10 +16,13 @@ import qualified Taskell.Data.Types.Taskell as Taskell
 import TmpData
 
 readLine :: Int -> Taskell.Taskell -> Maybe Text
-readLine number tsk = (Seq.!?) lns (number - 1)
-  where
-    serialized = utf8BuilderToText (serialize defaultDictionary tsk)
-    lns = Seq.fromList (T.split (== '\n') serialized)
+readLine number tsk =
+    case serialize defaultDictionary tsk of
+        Left _ -> Nothing
+        Right txt -> do
+            let serialized = utf8BuilderToText txt
+            let lns = Seq.fromList (T.split (== '\n') serialized)
+            (Seq.!?) lns (number - 1)
 
 -- tests
 spec :: Spec
