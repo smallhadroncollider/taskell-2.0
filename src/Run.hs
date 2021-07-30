@@ -9,7 +9,7 @@ import qualified RIO.Seq as Seq
 import qualified Brick as B
 import qualified Graphics.Vty as V (defAttr)
 
-import qualified Taskell.Data.Taskell as T (ListTuples, Taskell, getListsWithIDs, tasksForList)
+import qualified Taskell.Data.Taskell as T (ListTuple, Taskell, getListsWithIDs, tasksForList)
 import qualified Taskell.Data.Types.List as TL (title)
 import qualified Taskell.Data.Types.Task as TT (Task, title)
 import qualified Taskell.Error as Error
@@ -49,14 +49,14 @@ taskWidgets tasks = do
     let items = toList (taskWidget <$> tasks)
     pure $ B.vBox $ B.padTop (B.Pad 1) <$> items
 
-listWidget :: Int -> T.ListTuples -> StateReader (B.Widget Name)
+listWidget :: Int -> T.ListTuple -> StateReader (B.Widget Name)
 listWidget index (listID, list) = do
     tskl <- get
     tasks <- err taskWidgets (T.tasksForList listID tskl)
     let title = tshow (index + 1) <> ". " <> list ^. TL.title
     pure $ textWidget title B.<=> tasks
 
-listWidgets :: Seq T.ListTuples -> StateReader (B.Widget Name)
+listWidgets :: Seq T.ListTuple -> StateReader (B.Widget Name)
 listWidgets lists = do
     listWs <- sequence (listWidget `Seq.mapWithIndex` lists)
     let sized = B.padTop (B.Pad 1) . B.padLeftRight 3 . B.hLimit 25 <$> listWs

@@ -57,7 +57,7 @@ task3 =
         "Do third thing"
         False
         []
-        (TaskID <$> Seq.fromList [6, 2])
+        (TaskID <$> Seq.fromList [1, 2])
         (ContributorID <$> Seq.fromList [2])
         [TagID 2]
 

@@ -1,9 +1,10 @@
 module Taskell.Data.Taskell
     ( TT.Taskell(..)
-    , ListTuples
+    , ListTuple
     , removeTasks
     , tasksForList
     , tasksForTask
+    , tasksForListWithIDs
     , getLists
     , getListsWithIDs
     , moveListLeft
@@ -50,13 +51,13 @@ type Result a = TT.Taskell -> Error.EitherError a
 type Update = Result TT.Taskell
 
 -- getting lists
-type ListTuples = (TTL.ListID, TTL.List)
+type ListTuple = (TTL.ListID, TTL.List)
 
 getList :: TTL.ListID -> Result TTL.List
 getList listID taskell =
     Error.mEither ("Unknown reference: " <> tshow listID) (HM.lookup listID (taskell ^. TT.lists))
 
-getListWithID :: TTL.ListID -> Result ListTuples
+getListWithID :: TTL.ListID -> Result ListTuple
 getListWithID listID taskell = do
     list <- getList listID taskell
     pure (listID, list)
@@ -64,7 +65,7 @@ getListWithID listID taskell = do
 getLists :: Result (Seq.Seq TTL.List)
 getLists taskell = traverse (`getList` taskell) (taskell ^. TT.listsOrder)
 
-getListsWithIDs :: Result (Seq.Seq ListTuples)
+getListsWithIDs :: Result (Seq.Seq ListTuple)
 getListsWithIDs taskell = traverse (`getListWithID` taskell) (taskell ^. TT.listsOrder)
 
 -- reordering lists
@@ -98,6 +99,8 @@ getListRight :: TTL.ListID -> TT.Taskell -> Maybe TTL.ListID
 getListRight listID = ID.getToRight listID . (^. TT.listsOrder)
 
 -- getting tasks
+type TaskTuple = (TTT.TaskID, TTT.Task)
+
 updateTasks :: (TTT.Tasks -> TTT.Tasks) -> Update
 updateTasks fn taskell = pure (taskell & TT.tasks %~ fn)
 
@@ -109,6 +112,15 @@ addTask task taskID = updateTasks (HM.insert taskID task)
 
 taskIDsToTasks :: TTT.TaskIDs -> Result (Seq.Seq TTT.Task)
 taskIDsToTasks taskIDs taskell = traverse (`getTask` taskell) taskIDs
+
+taskIDsToTasksWithIDs :: TTT.TaskIDs -> Result (Seq TaskTuple)
+taskIDsToTasksWithIDs taskIDs taskell = do
+    tasks <- traverse (`getTask` taskell) taskIDs
+    pure $ Seq.zip taskIDs tasks
+
+tasksForListWithIDs :: TTL.ListID -> Result (Seq TaskTuple)
+tasksForListWithIDs listID taskell =
+    getList listID taskell >>= (`taskIDsToTasksWithIDs` taskell) . (^. TTL.tasks)
 
 tasksForList :: TTL.ListID -> Result (Seq.Seq TTT.Task)
 tasksForList listID taskell = getList listID taskell >>= (`taskIDsToTasks` taskell) . (^. TTL.tasks)
