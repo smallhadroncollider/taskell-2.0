@@ -74,6 +74,7 @@ taskC' rel tsk task = do
     related <- taskRelatedC task rel
     pure $
         emptyTask & taskTitle .~ (task ^. Task.title) & taskDescription .~ desc &
+        taskComplete .~ (task ^. Task.complete) &
         taskContributors .~ conts &
         taskTags .~ tags &
         taskRelated .~ related &

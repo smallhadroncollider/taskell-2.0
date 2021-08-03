@@ -13,12 +13,13 @@ data Dictionary =
         , _duePrefix :: !Text
         , _relatedPrefix :: !Text
         , _contributorsPrefix :: !Text
+        , _indentAmount :: !Int
         }
 
 makeLenses ''Dictionary
 
 defaultDictionary :: Dictionary
-defaultDictionary = Dictionary "Contributors" "**Due**:" "**Related**:" "**Contributors**:"
+defaultDictionary = Dictionary "Contributors" "**Due**:" "**Related**:" "**Contributors**:" 4
 
 -- intermediary data format
 data SerializedTask =

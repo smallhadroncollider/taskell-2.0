@@ -80,7 +80,7 @@ spec = do
                               [ SerializedTask
                                     "Sub Sub Task"
                                     (Just "Sub sub task")
-                                    False
+                                    True
                                     [ SerializedTask
                                           "Sub Sub Sub Task"
                                           (Just "Sub sub sub task")

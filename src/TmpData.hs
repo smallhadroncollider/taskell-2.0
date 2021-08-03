@@ -91,7 +91,7 @@ task7 =
         "Sub Sub Task"
         (ParentTask (TaskID 6))
         "Sub sub task"
-        False
+        True
         (TaskID <$> Seq.fromList [8])
         []
         []
