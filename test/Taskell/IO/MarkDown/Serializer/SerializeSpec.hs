@@ -77,3 +77,17 @@ spec = do
                                     readLine 29 tmpData `shouldBe`
                                         Just "            Sub sub sub task"
                                 it "blank line" $ do readLine 30 tmpData `shouldBe` Just ""
+                it "tags" $ do readLine 31 tmpData `shouldBe` Just "`#fish`, `#cow`"
+                it "blank line" $ do readLine 32 tmpData `shouldBe` Just ""
+                it "related" $ do
+                    readLine 33 tmpData `shouldBe`
+                        Just "**Related**: [First List / Fifth Task](#fifth-task)"
+                it "blank line" $ do readLine 34 tmpData `shouldBe` Just ""
+                it "contributors" $ do
+                    readLine 35 tmpData `shouldBe` Just "**Contributors**: @Bob, @Jim"
+            describe "next task" $ do
+                it "should have break before" $ do readLine 36 tmpData `shouldBe` Just ""
+                it "title" $ do readLine 37 tmpData `shouldBe` Just "### Third Task"
+        describe "second list" $ do
+            it "should have break before" $ do readLine 56 tmpData `shouldBe` Just ""
+            it "title" $ do readLine 57 tmpData `shouldBe` Just "## Second List"
