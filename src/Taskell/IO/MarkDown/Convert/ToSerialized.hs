@@ -8,6 +8,7 @@ module Taskell.IO.MarkDown.Convert.ToSerialized
 import RIO
 import qualified RIO.HashMap as HM
 import qualified RIO.List as L
+import qualified RIO.Seq as Seq
 
 import qualified Taskell.Error as Error
 
@@ -59,7 +60,7 @@ taskTasksC task rel tsk = do
     tasks <- traverse (`Taskell.getTask` tsk) (toList $ task ^. Task.tasks)
     traverse (taskC' rel tsk) tasks
 
-taskRelatedC :: Task.Task -> RelatedDictionary -> Error.EitherError [Text]
+taskRelatedC :: Task.Task -> RelatedDictionary -> Error.EitherError [(Text, Text, Text)]
 taskRelatedC task rel = do
     traverse
         (Error.mEither "Unknown related task" . (`HM.lookup` rel))
@@ -97,14 +98,27 @@ listsC rel tsk = do
     traverse (listC rel tsk) lists
 
 -- related
-type RelatedDictionary = HM.HashMap Task.TaskID Text
+type RelatedDictionary = HM.HashMap Task.TaskID (Text, Text, Text)
+
+tasksForList ::
+       Taskell.Taskell -> (List.ListID, Text) -> Error.EitherError (Seq (Task.TaskID, (Text, Text)))
+tasksForList tsk (lID, title) = do
+    tasks <- Taskell.tasksForListWithIDs lID tsk
+    let taskTitles = second (^. Task.title) <$> tasks -- [(TaskID 1, "First Task"), ...]
+    pure $ second (title, ) <$> taskTitles
+
+merge :: (Text, (Task.TaskID, (Text, Text))) -> (Task.TaskID, (Text, Text, Text))
+merge (lnk, (tID, (lTitle, tTitle))) = (tID, (lTitle, tTitle, lnk))
 
 relatedDictionary :: Taskell.Taskell -> Error.EitherError RelatedDictionary
 relatedDictionary tsk = do
-    let listIDs = tsk ^. Taskell.listsOrder
-    tasks <- traverse (`Taskell.tasksForListWithIDs` tsk) listIDs
-    let titles = generateLinks $ second (^. Task.title) <$> join tasks
-    pure $ HM.fromList (toList titles)
+    lists <- Taskell.getListsWithIDs tsk
+    let listTitles = second (^. List.title) <$> lists -- [(ListID 1, "First List"), ...]
+    titles <- join <$> traverse (tasksForList tsk) listTitles -- [(TaskID 1, ("First List / First Task", "First Task")), ...]
+    let links = generateLinks $ snd . snd <$> titles
+    let zipped = Seq.zip links titles
+    let merged = merge <$> zipped
+    pure $ HM.fromList (toList merged)
 
 -- convert
 convert :: Taskell.Taskell -> Error.EitherError SerializedTaskell

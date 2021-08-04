@@ -43,10 +43,14 @@ tagP = P.string "`#" *> P.takeTo "`"
 tagsP :: P.Parser [Text]
 tagsP = P.lexeme $ tagP `P.sepBy` P.lexeme (P.char ',')
 
-relatedP :: P.Parser Text
-relatedP = P.string "[" <* P.takeTo "](#" *> P.takeTo ")"
+relatedP :: P.Parser (Text, Text, Text)
+relatedP = do
+    lTitle <- P.string "[" *> P.takeTo " / "
+    tTitle <- P.takeTo "](#"
+    lnk <- P.takeTo ")"
+    pure (lTitle, tTitle, lnk)
 
-relatedsP :: Dictionary -> P.Parser [Text]
+relatedsP :: Dictionary -> P.Parser [(Text, Text, Text)]
 relatedsP dictionary =
     P.lexeme $ do
         _ <- P.lexeme $ P.string (dictionary ^. relatedPrefix)

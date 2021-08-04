@@ -27,11 +27,11 @@ spec = do
         it "generates dictionary" $ do
             relatedDictionary tmpData `shouldBe`
                 Right
-                    [ (TaskID 1, "first-task")
-                    , (TaskID 3, "third-task")
-                    , (TaskID 5, "fifth-task")
-                    , (TaskID 2, "second-task")
-                    , (TaskID 4, "fourth-task")
+                    [ (TaskID 1, ("First List", "First Task", "first-task"))
+                    , (TaskID 3, ("First List", "Third Task", "third-task"))
+                    , (TaskID 5, ("First List", "Fifth Task", "fifth-task"))
+                    , (TaskID 2, ("Second List", "Second Task", "second-task"))
+                    , (TaskID 4, ("Second List", "Fourth Task", "fourth-task"))
                     ]
     describe "convert" $ do
         describe "title" $ do
@@ -68,7 +68,8 @@ spec = do
                 (^. taskContributors) <$> firstTask `shouldBe` Right ["Bob", "Jim"]
             it "has tags" $ do (^. taskTags) <$> firstTask `shouldBe` Right ["fish", "cow"]
             it "has related tasks" $ do
-                (^. taskRelated) <$> firstTask `shouldBe` Right ["fifth-task"]
+                (^. taskRelated) <$>
+                    firstTask `shouldBe` Right [("First List", "Fifth Task", "fifth-task")]
             it "has sub-tasks" $ do
                 (^. taskTasks) <$>
                     firstTask `shouldBe`

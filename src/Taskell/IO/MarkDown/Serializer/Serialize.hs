@@ -116,6 +116,18 @@ taskContributorS task =
             s . ((display prefix <> " ") <>) . mconcat . L.intersperse ", " $
                 display . ("@" <>) <$> cnts
 
+relatedLinkS :: (Text, Text, Text) -> Text
+relatedLinkS (lTitle, tTitle, lnk) = mconcat ["[", lTitle, " / ", tTitle, "](#", lnk, ")"]
+
+relatedS :: SerializedTask -> Serializer
+relatedS task =
+    case task ^. taskRelated of
+        [] -> pure Nothing
+        rels -> do
+            prefix <- (^. relatedPrefix) <$> ask
+            s . ((display prefix <> " ") <>) . mconcat . L.intersperse ", " $
+                display . relatedLinkS <$> rels
+
 idd :: Int -> (SerializedTask -> Serializer) -> SerializedTask -> Serializer
 idd level fn task = do
     ident <- indent level
@@ -125,7 +137,13 @@ idd level fn task = do
 taskS :: Int -> SerializedTask -> DictionaryReader Utf8Builder
 taskS level task = do
     let ident = idd level
-    let parts = [ident taskDescriptionS, subTasksS level, ident tagsS, ident taskContributorS]
+    let parts =
+            [ ident taskDescriptionS
+            , subTasksS level
+            , ident tagsS
+            , ident relatedS
+            , ident taskContributorS
+            ]
     main <- dbl . catMaybes <$> sequence (($ task) <$> parts)
     title <- taskTitleS level task
     pure $ mconcat [title, eol, mconcat main]

@@ -9,8 +9,6 @@ import qualified RIO.Char as C
 import qualified RIO.Seq as Seq
 import qualified RIO.Text as T
 
-import qualified Taskell.Data.Types.Task as Task
-
 -- the rules?
 -- 1) strip
 -- 2) lower-case everything
@@ -33,17 +31,14 @@ postfix :: Int -> Text -> Text
 postfix 0 url = url
 postfix i url = url <> "-" <> tshow i
 
-enumerate ::
-       (Seq Text, Seq (Task.TaskID, Text))
-    -> (Task.TaskID, Text)
-    -> (Seq Text, Seq (Task.TaskID, Text))
-enumerate (prev, acc) (tID, url) = (prev Seq.|> url, acc Seq.|> (tID, postfix count url))
+enumerate :: (Seq Text, Seq Text) -> Text -> (Seq Text, Seq Text)
+enumerate (prev, acc) url = (prev Seq.|> url, acc Seq.|> postfix count url)
   where
     count = length . Seq.filter (== url) $ prev
 
-dedup :: Seq (Task.TaskID, Text) -> Seq (Task.TaskID, Text)
+dedup :: Seq Text -> Seq Text
 dedup = snd . foldl' enumerate ([], [])
 
 -- generate
-generateLinks :: Seq (Task.TaskID, Text) -> Seq (Task.TaskID, Text)
-generateLinks s = dedup $ second format <$> s
+generateLinks :: Seq Text -> Seq Text
+generateLinks = dedup . (format <$>)

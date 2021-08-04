@@ -25,7 +25,7 @@ newtype TaskID =
     TaskID ID
     deriving (Eq, Show)
 
-type TaskIDs = Seq.Seq TaskID
+type TaskIDs = Seq TaskID
 
 instance Hashable TaskID where
     hashWithSalt a (TaskID b) = hashWithSalt a b
@@ -35,7 +35,7 @@ newtype ListID =
     ListID ID
     deriving (Eq, Show)
 
-type ListIDs = Seq.Seq ListID
+type ListIDs = Seq ListID
 
 instance Hashable ListID where
     hashWithSalt a (ListID b) = hashWithSalt a b
@@ -45,7 +45,7 @@ newtype ContributorID =
     ContributorID ID
     deriving (Eq, Show)
 
-type ContributorIDs = Seq.Seq ContributorID
+type ContributorIDs = Seq ContributorID
 
 instance Hashable ContributorID where
     hashWithSalt a (ContributorID b) = hashWithSalt a b
@@ -55,13 +55,13 @@ newtype TagID =
     TagID ID
     deriving (Eq, Show)
 
-type TagIDs = Seq.Seq TagID
+type TagIDs = Seq TagID
 
 instance Hashable TagID where
     hashWithSalt a (TagID b) = hashWithSalt a b
 
 -- functions
-movePos :: Eq a => Int -> a -> Seq.Seq a -> Seq.Seq a
+movePos :: Eq a => Int -> a -> Seq a -> Seq a
 movePos n item list =
     case Seq.elemIndexL item list of
         Nothing -> list
@@ -69,17 +69,17 @@ movePos n item list =
             let deleted = Seq.deleteAt index list
             Seq.insertAt (index + n) item deleted
 
-moveLeft :: Eq a => a -> Seq.Seq a -> Seq.Seq a
+moveLeft :: Eq a => a -> Seq a -> Seq a
 moveLeft = movePos (-1)
 
-moveRight :: Eq a => a -> Seq.Seq a -> Seq.Seq a
+moveRight :: Eq a => a -> Seq a -> Seq a
 moveRight = movePos 1
 
-getToPos :: Eq a => Int -> a -> Seq.Seq a -> Maybe a
+getToPos :: Eq a => Int -> a -> Seq a -> Maybe a
 getToPos n item list = (list Seq.!?) . (+ n) =<< Seq.elemIndexL item list
 
-getToLeft :: Eq a => a -> Seq.Seq a -> Maybe a
+getToLeft :: Eq a => a -> Seq a -> Maybe a
 getToLeft = getToPos (-1)
 
-getToRight :: Eq a => a -> Seq.Seq a -> Maybe a
+getToRight :: Eq a => a -> Seq a -> Maybe a
 getToRight = getToPos 1

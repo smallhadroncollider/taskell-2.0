@@ -30,7 +30,7 @@ data SerializedTask =
         -- , _taskDue :: !(Maybe Text)
         , _taskTasks :: ![SerializedTask]
         , _taskTags :: ![Text]
-        , _taskRelated :: ![Text]
+        , _taskRelated :: ![(Text, Text, Text)]
         , _taskContributors :: ![Text]
         }
     deriving (Eq, Show)
