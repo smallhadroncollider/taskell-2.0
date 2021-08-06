@@ -62,10 +62,10 @@ getListWithID listID taskell = do
     list <- getList listID taskell
     pure (listID, list)
 
-getLists :: Result (Seq.Seq TTL.List)
+getLists :: Result (Seq TTL.List)
 getLists taskell = traverse (`getList` taskell) (taskell ^. TT.listsOrder)
 
-getListsWithIDs :: Result (Seq.Seq ListTuple)
+getListsWithIDs :: Result (Seq ListTuple)
 getListsWithIDs taskell = traverse (`getListWithID` taskell) (taskell ^. TT.listsOrder)
 
 -- reordering lists
@@ -110,7 +110,7 @@ updateTask fn taskID = updateTasks (HM.adjust fn taskID)
 addTask :: TTT.Task -> TTT.TaskID -> Update
 addTask task taskID = updateTasks (HM.insert taskID task)
 
-taskIDsToTasks :: TTT.TaskIDs -> Result (Seq.Seq TTT.Task)
+taskIDsToTasks :: TTT.TaskIDs -> Result (Seq TTT.Task)
 taskIDsToTasks taskIDs taskell = traverse (`getTask` taskell) taskIDs
 
 taskIDsToTasksWithIDs :: TTT.TaskIDs -> Result (Seq TaskTuple)
@@ -122,10 +122,10 @@ tasksForListWithIDs :: TTL.ListID -> Result (Seq TaskTuple)
 tasksForListWithIDs listID taskell =
     getList listID taskell >>= (`taskIDsToTasksWithIDs` taskell) . (^. TTL.tasks)
 
-tasksForList :: TTL.ListID -> Result (Seq.Seq TTT.Task)
+tasksForList :: TTL.ListID -> Result (Seq TTT.Task)
 tasksForList listID taskell = getList listID taskell >>= (`taskIDsToTasks` taskell) . (^. TTL.tasks)
 
-tasksForTask :: TTT.TaskID -> Result (Seq.Seq TTT.Task)
+tasksForTask :: TTT.TaskID -> Result (Seq TTT.Task)
 tasksForTask taskID taskell = getTask taskID taskell >>= (`taskIDsToTasks` taskell) . (^. TTT.tasks)
 
 getTask :: TTT.TaskID -> TT.Taskell -> Error.EitherError TTT.Task
