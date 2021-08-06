@@ -7,10 +7,17 @@ This is a thing with some stuff
 Blah blah blah
 
 - [x] A sub-task with the thing
+
+    Sub task
+
+    - [x] Sub Sub Task
+
+    `#submarine`, `#subcutaneous`
+
 - [ ] Nonsense
 
 `#thing`, `#things`
 
-**Related**: [Stuff / How are you?](#hello-mum-1)
+**Related**: [Stuff / Hello Mum](#hello-mum-1), [Things / How are you?](#how-are-you)
 
 **Contributors**: *@Mark*, *@Jess*

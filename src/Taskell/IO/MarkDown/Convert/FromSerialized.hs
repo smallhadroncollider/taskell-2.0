@@ -40,6 +40,10 @@ idStart :: NextID
 idStart = NextID 1 1
 
 -- conversion
+setDescription :: Maybe Text -> Taskell.Taskell -> Task.TaskID -> Error.EitherError Taskell.Taskell
+setDescription Nothing tsk _ = pure $ tsk
+setDescription (Just desc) tsk tID = Taskell.changeTaskDescription desc tID tsk
+
 parsedTaskToTaskell ::
        List.ListID
     -> (NextID, Taskell.Taskell)
@@ -52,7 +56,8 @@ parsedTaskToTaskell listID (ids, tsk) t = do
             Seq.fromList . catMaybes $
             Taskell.findContributorFromSign tsk <$> (t ^. taskContributors)
     updated' <- Taskell.setTaskContributors conts taskID updated
-    pure (incTask ids, updated')
+    updated'' <- setDescription (t ^. taskDescription) updated' taskID
+    pure (incTask ids, updated'')
 
 parsedListToTaskell ::
        (NextID, Taskell.Taskell) -> SerializedList -> Error.EitherError (NextID, Taskell.Taskell)

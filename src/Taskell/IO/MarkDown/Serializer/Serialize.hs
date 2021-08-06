@@ -53,9 +53,9 @@ contributorS :: SerializedContributor -> DictionaryReader Utf8Builder
 contributorS cont = do
     pure $
         mconcat
-            [ "- @"
+            [ "- **@"
             , display (cont ^. contributorSign)
-            , ": "
+            , "**: "
             , display (cont ^. contributorName)
             , " ("
             , display (cont ^. contributorEmail)
@@ -114,7 +114,7 @@ taskContributorS task =
         cnts -> do
             prefix <- (^. contributorsPrefix) <$> ask
             s . ((display prefix <> " ") <>) . mconcat . L.intersperse ", " $
-                display . ("@" <>) <$> cnts
+                display . ("*@" <>) . (<> "*") <$> cnts
 
 relatedLinkS :: (Text, Text, Text) -> Text
 relatedLinkS (lTitle, tTitle, lnk) = mconcat ["[", lTitle, " / ", tTitle, "](#", lnk, ")"]

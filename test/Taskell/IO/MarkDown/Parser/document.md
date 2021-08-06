@@ -6,8 +6,8 @@ See how many lists there are!
 
 ## Contributors
 
-- **@Mark**: Mark Wales (mark@smallhadroncollider.com)
 - **@Jess**: Jess Munroe (jess@munroesoft.com)
+- **@Mark**: Mark Wales (mark@smallhadroncollider.com)
 
 ---
 
@@ -15,36 +15,37 @@ See how many lists there are!
 
 ### Hello Mum
 
-**Due**: 2021-12-03 12:00
-
 This is a thing with some stuff
 
 Blah blah blah
 
 - [x] A sub-task with the thing
+
+    Sub task
+
+    - [x] Sub Sub Task
+
+    `#submarine`, `#subcutaneous`
+
 - [ ] Nonsense
 
 `#thing`, `#things`
 
-**Related**: [Stuff / How are you?](#hello-mum-1)
+**Related**: [Stuff / Do a thing](#do-a-thing)
 
 **Contributors**: *@Mark*, *@Jess*
 
 ### How are you?
 
-**Due**: 2021-12-03 12:00
-
 This is a thing with some stuff
 
 Blah blah blah
 
-**Related**: [Stuff / How are you?](#hello-mum-1)
+**Related**: [Stuff / This is a task](#this-is-a-task-1)
 
 **Contributors**: *@Mark*
 
 ### This is a task
-
-**Due**: 2021-12-03 12:00
 
 This is a thing with some stuff
 
@@ -52,7 +53,7 @@ Blah blah blah
 
 `#thing`, `#things`
 
-**Related**: [Stuff / How are you?](#hello-mum-1)
+**Related**: [Stuff / Eat a thing](#eat-a-thing)
 
 **Contributors**: *@Jess*
 
@@ -66,15 +67,13 @@ Blah blah blah
 
 ### Eat a thing
 
-**Due**: 2021-12-03 12:00
-
 This is a thing with some stuff
 
 Blah blah blah
 
-### Poke a thing
+**Related**: [Things / Hello Mum](#hello-mum), [Things / This is a task](#this-is-a-task)
 
-**Due**: 2021-12-03 12:00
+### This is a task
 
 This is a thing with some stuff
 

@@ -38,10 +38,12 @@ spec = do
         it "new line before" $ do readLine 4 tmpData `shouldBe` Just ""
         it "title" $ do readLine 5 tmpData `shouldBe` Just "## Contributors"
         it "new line before contributors" $ do readLine 6 tmpData `shouldBe` Just ""
-        it "first contributor" $ do readLine 7 tmpData `shouldBe` Just "- @Bob: Bob (bob@bob.com)"
+        it "first contributor" $ do
+            readLine 7 tmpData `shouldBe` Just "- **@Bob**: Bob (bob@bob.com)"
         it "second contributor" $ do
-            readLine 8 tmpData `shouldBe` Just "- @Jenny: Jenny (jenny@jenny.com)"
-        it "third contributor" $ do readLine 9 tmpData `shouldBe` Just "- @Jim: Jim (jim@jim.com)"
+            readLine 8 tmpData `shouldBe` Just "- **@Jenny**: Jenny (jenny@jenny.com)"
+        it "third contributor" $ do
+            readLine 9 tmpData `shouldBe` Just "- **@Jim**: Jim (jim@jim.com)"
     describe "horizontal rule" $ do
         it "should have break before" $ do readLine 10 tmpData `shouldBe` Just ""
         it "horizontal rule" $ do readLine 11 tmpData `shouldBe` Just "---"
@@ -84,7 +86,7 @@ spec = do
                         Just "**Related**: [First List / Fifth Task](#fifth-task)"
                 it "blank line" $ do readLine 34 tmpData `shouldBe` Just ""
                 it "contributors" $ do
-                    readLine 35 tmpData `shouldBe` Just "**Contributors**: @Bob, @Jim"
+                    readLine 35 tmpData `shouldBe` Just "**Contributors**: *@Bob*, *@Jim*"
             describe "next task" $ do
                 it "should have break before" $ do readLine 36 tmpData `shouldBe` Just ""
                 it "title" $ do readLine 37 tmpData `shouldBe` Just "### Third Task"

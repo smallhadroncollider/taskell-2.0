@@ -35,7 +35,7 @@ listP :: Dictionary -> P.Parser SerializedList
 listP dictionary =
     P.lexeme $ do
         ttl <- titleP 2
-        tasks <- P.many1' (taskP dictionary)
+        tasks <- P.many' (taskP dictionary 0)
         pure $ SerializedList ttl tasks
 
 listsP :: Dictionary -> P.Parser [SerializedList]
