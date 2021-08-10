@@ -9,9 +9,9 @@ import qualified RIO.Seq as Seq
 import qualified Brick as B
 import qualified Graphics.Vty as V (defAttr)
 
-import qualified Taskell.Data.Taskell as T (ListTuple, Taskell, getListsWithIDs, tasksForList)
-import qualified Taskell.Data.Types.List as TL (title)
-import qualified Taskell.Data.Types.Task as TT (Task, title)
+import qualified Taskell.Data.Taskell as Taskell (ListTuple, Taskell, getListsWithIDs, tasksForList)
+import qualified Taskell.Data.Types.List as List (title)
+import qualified Taskell.Data.Types.Task as Task (Task, title)
 import qualified Taskell.Error as Error
 import Taskell.UI.State (State(..), StateReader, taskell)
 import Taskell.UI.Text.Split (withWidth)
@@ -22,7 +22,7 @@ data Name =
     Name
     deriving (Ord, Eq)
 
-get :: StateReader T.Taskell
+get :: StateReader Taskell.Taskell
 get = (^. taskell) <$> ask
 
 err :: (b -> StateReader (B.Widget Name)) -> Error.EitherError b -> StateReader (B.Widget Name)
@@ -41,22 +41,22 @@ textWidget txt =
         width <- (^. B.availWidthL) <$> B.getContext
         B.render $ textWidget' txt width
 
-taskWidget :: TT.Task -> B.Widget Name
-taskWidget task = textWidget (task ^. TT.title)
+taskWidget :: Task.Task -> B.Widget Name
+taskWidget task = textWidget (task ^. Task.title)
 
-taskWidgets :: Seq TT.Task -> StateReader (B.Widget Name)
+taskWidgets :: Seq Task.Task -> StateReader (B.Widget Name)
 taskWidgets tasks = do
     let items = toList (taskWidget <$> tasks)
     pure $ B.vBox $ B.padTop (B.Pad 1) <$> items
 
-listWidget :: Int -> T.ListTuple -> StateReader (B.Widget Name)
+listWidget :: Int -> Taskell.ListTuple -> StateReader (B.Widget Name)
 listWidget index (listID, list) = do
     tskl <- get
-    tasks <- err taskWidgets (T.tasksForList listID tskl)
-    let title = tshow (index + 1) <> ". " <> list ^. TL.title
+    tasks <- err taskWidgets (Taskell.tasksForList listID tskl)
+    let title = tshow (index + 1) <> ". " <> list ^. List.title
     pure $ textWidget title B.<=> tasks
 
-listWidgets :: Seq T.ListTuple -> StateReader (B.Widget Name)
+listWidgets :: Seq Taskell.ListTuple -> StateReader (B.Widget Name)
 listWidgets lists = do
     listWs <- sequence (listWidget `Seq.mapWithIndex` lists)
     let sized = B.padTop (B.Pad 1) . B.padLeftRight 3 . B.hLimit 25 <$> listWs
@@ -65,7 +65,7 @@ listWidgets lists = do
 drawS :: StateReader [B.Widget Name]
 drawS = do
     tskl <- get
-    widget <- err listWidgets (T.getListsWithIDs tskl)
+    widget <- err listWidgets (Taskell.getListsWithIDs tskl)
     pure [widget]
 
 draw :: State -> [B.Widget Name]

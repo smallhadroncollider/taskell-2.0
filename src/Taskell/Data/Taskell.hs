@@ -1,5 +1,5 @@
 module Taskell.Data.Taskell
-    ( TT.Taskell(..)
+    ( Taskell.Taskell(..)
     , ListTuple
     , removeTasks
     , tasksForList
@@ -35,204 +35,212 @@ import qualified RIO.HashMap as HM
 import qualified RIO.List as L
 import qualified RIO.Seq as Seq
 
-import qualified Taskell.Data.List as TTL
-import qualified Taskell.Data.Task as TTT
-import qualified Taskell.Data.Types.Contributor as TTC
+import qualified Taskell.Data.List as List
+import qualified Taskell.Data.Task as Task
+import qualified Taskell.Data.Types.Contributor as Contributor
 import qualified Taskell.Data.Types.ID as ID
-import qualified Taskell.Data.Types.List as TTL
+import qualified Taskell.Data.Types.List as List
 import qualified Taskell.Data.Types.Tag as Tag
-import qualified Taskell.Data.Types.Task as TTT
-import qualified Taskell.Data.Types.Taskell as TT
+import qualified Taskell.Data.Types.Task as Task
+import qualified Taskell.Data.Types.Taskell as Taskell
 
 import qualified Taskell.Error as Error
 
-type Result a = TT.Taskell -> Error.EitherError a
+type Result a = Taskell.Taskell -> Error.EitherError a
 
-type Update = Result TT.Taskell
+type Update = Result Taskell.Taskell
 
 -- getting lists
-type ListTuple = (TTL.ListID, TTL.List)
+type ListTuple = (List.ListID, List.List)
 
-getList :: TTL.ListID -> Result TTL.List
+getList :: List.ListID -> Result List.List
 getList listID taskell =
-    Error.mEither ("Unknown reference: " <> tshow listID) (HM.lookup listID (taskell ^. TT.lists))
+    Error.mEither
+        ("Unknown reference: " <> tshow listID)
+        (HM.lookup listID (taskell ^. Taskell.lists))
 
-getListWithID :: TTL.ListID -> Result ListTuple
+getListWithID :: List.ListID -> Result ListTuple
 getListWithID listID taskell = do
     list <- getList listID taskell
     pure (listID, list)
 
-getLists :: Result (Seq TTL.List)
-getLists taskell = traverse (`getList` taskell) (taskell ^. TT.listsOrder)
+getLists :: Result (Seq List.List)
+getLists taskell = traverse (`getList` taskell) (taskell ^. Taskell.listsOrder)
 
 getListsWithIDs :: Result (Seq ListTuple)
-getListsWithIDs taskell = traverse (`getListWithID` taskell) (taskell ^. TT.listsOrder)
+getListsWithIDs taskell = traverse (`getListWithID` taskell) (taskell ^. Taskell.listsOrder)
 
 -- reordering lists
-moveListLeft :: TTL.ListID -> Update
-moveListLeft listID taskell = pure (taskell & TT.listsOrder %~ ID.moveLeft listID)
+moveListLeft :: List.ListID -> Update
+moveListLeft listID taskell = pure (taskell & Taskell.listsOrder %~ ID.moveLeft listID)
 
-moveListRight :: TTL.ListID -> Update
-moveListRight listID taskell = pure (taskell & TT.listsOrder %~ ID.moveRight listID)
+moveListRight :: List.ListID -> Update
+moveListRight listID taskell = pure (taskell & Taskell.listsOrder %~ ID.moveRight listID)
 
 -- working with lists
-updateList :: TTL.Update -> TTL.ListID -> Update
-updateList fn listID taskell = pure (taskell & TT.lists %~ HM.adjust fn listID)
+updateList :: List.Update -> List.ListID -> Update
+updateList fn listID taskell = pure (taskell & Taskell.lists %~ HM.adjust fn listID)
 
-renameList :: Text -> TTL.ListID -> Update
-renameList title = updateList (TTL.rename title)
+renameList :: Text -> List.ListID -> Update
+renameList title = updateList (List.rename title)
 
-addList :: Text -> TTL.ListID -> Update
+addList :: Text -> List.ListID -> Update
 addList title listID taskell =
     pure
-        (taskell & TT.lists %~ HM.insert listID (TTL.new title) &
-         TT.listsOrder %~ (<> Seq.singleton listID))
+        (taskell & Taskell.lists %~ HM.insert listID (List.new title) &
+         Taskell.listsOrder %~ (<> Seq.singleton listID))
 
-removeList :: TTL.ListID -> Update
+removeList :: List.ListID -> Update
 removeList listID taskell =
-    pure (taskell & TT.lists %~ HM.delete listID & TT.listsOrder %~ Seq.filter (/= listID))
+    pure
+        (taskell & Taskell.lists %~ HM.delete listID & Taskell.listsOrder %~ Seq.filter (/= listID))
 
-getListLeft :: TTL.ListID -> TT.Taskell -> Maybe TTL.ListID
-getListLeft listID = ID.getToLeft listID . (^. TT.listsOrder)
+getListLeft :: List.ListID -> Taskell.Taskell -> Maybe List.ListID
+getListLeft listID = ID.getToLeft listID . (^. Taskell.listsOrder)
 
-getListRight :: TTL.ListID -> TT.Taskell -> Maybe TTL.ListID
-getListRight listID = ID.getToRight listID . (^. TT.listsOrder)
+getListRight :: List.ListID -> Taskell.Taskell -> Maybe List.ListID
+getListRight listID = ID.getToRight listID . (^. Taskell.listsOrder)
 
 -- getting tasks
-type TaskTuple = (TTT.TaskID, TTT.Task)
+type TaskTuple = (Task.TaskID, Task.Task)
 
-updateTasks :: (TTT.Tasks -> TTT.Tasks) -> Update
-updateTasks fn taskell = pure (taskell & TT.tasks %~ fn)
+updateTasks :: (Task.Tasks -> Task.Tasks) -> Update
+updateTasks fn taskell = pure (taskell & Taskell.tasks %~ fn)
 
-updateTask :: TTT.Update -> TTT.TaskID -> Update
+updateTask :: Task.Update -> Task.TaskID -> Update
 updateTask fn taskID = updateTasks (HM.adjust fn taskID)
 
-addTask :: TTT.Task -> TTT.TaskID -> Update
+addTask :: Task.Task -> Task.TaskID -> Update
 addTask task taskID = updateTasks (HM.insert taskID task)
 
-taskIDsToTasks :: TTT.TaskIDs -> Result (Seq TTT.Task)
+taskIDsToTasks :: Task.TaskIDs -> Result (Seq Task.Task)
 taskIDsToTasks taskIDs taskell = traverse (`getTask` taskell) taskIDs
 
-taskIDsToTasksWithIDs :: TTT.TaskIDs -> Result (Seq TaskTuple)
+taskIDsToTasksWithIDs :: Task.TaskIDs -> Result (Seq TaskTuple)
 taskIDsToTasksWithIDs taskIDs taskell = do
     tasks <- traverse (`getTask` taskell) taskIDs
     pure $ Seq.zip taskIDs tasks
 
-tasksForListWithIDs :: TTL.ListID -> Result (Seq TaskTuple)
+tasksForListWithIDs :: List.ListID -> Result (Seq TaskTuple)
 tasksForListWithIDs listID taskell =
-    getList listID taskell >>= (`taskIDsToTasksWithIDs` taskell) . (^. TTL.tasks)
+    getList listID taskell >>= (`taskIDsToTasksWithIDs` taskell) . (^. List.tasks)
 
-tasksForList :: TTL.ListID -> Result (Seq TTT.Task)
-tasksForList listID taskell = getList listID taskell >>= (`taskIDsToTasks` taskell) . (^. TTL.tasks)
+tasksForList :: List.ListID -> Result (Seq Task.Task)
+tasksForList listID taskell =
+    getList listID taskell >>= (`taskIDsToTasks` taskell) . (^. List.tasks)
 
-tasksForTask :: TTT.TaskID -> Result (Seq TTT.Task)
-tasksForTask taskID taskell = getTask taskID taskell >>= (`taskIDsToTasks` taskell) . (^. TTT.tasks)
+tasksForTask :: Task.TaskID -> Result (Seq Task.Task)
+tasksForTask taskID taskell =
+    getTask taskID taskell >>= (`taskIDsToTasks` taskell) . (^. Task.tasks)
 
-getTask :: TTT.TaskID -> TT.Taskell -> Error.EitherError TTT.Task
+getTask :: Task.TaskID -> Taskell.Taskell -> Error.EitherError Task.Task
 getTask taskID taskell =
-    Error.mEither ("Unknown reference: " <> tshow taskID) (HM.lookup taskID (taskell ^. TT.tasks))
+    Error.mEither
+        ("Unknown reference: " <> tshow taskID)
+        (HM.lookup taskID (taskell ^. Taskell.tasks))
 
-addTaskToList :: Text -> TTT.TaskID -> TTL.ListID -> Update
+addTaskToList :: Text -> Task.TaskID -> List.ListID -> Update
 addTaskToList title taskID listID taskell =
-    addTask (TTT.new title (TTT.ParentList listID)) taskID taskell >>=
-    updateList (TTL.addTask taskID) listID
+    addTask (Task.new title (Task.ParentList listID)) taskID taskell >>=
+    updateList (List.addTask taskID) listID
 
-renameTask :: Text -> TTT.TaskID -> Update
-renameTask title = updateTask (TTT.rename title)
+renameTask :: Text -> Task.TaskID -> Update
+renameTask title = updateTask (Task.rename title)
 
-changeTaskDescription :: Text -> TTT.TaskID -> Update
-changeTaskDescription title = updateTask (TTT.changeDescription title)
+changeTaskDescription :: Text -> Task.TaskID -> Update
+changeTaskDescription title = updateTask (Task.changeDescription title)
 
-setTaskContributors :: TTC.ContributorIDs -> TTT.TaskID -> Update
-setTaskContributors contributorIDs = updateTask (TTT.setContributors contributorIDs)
+setTaskContributors :: Contributor.ContributorIDs -> Task.TaskID -> Update
+setTaskContributors contributorIDs = updateTask (Task.setContributors contributorIDs)
 
-moveTaskUp :: TTT.TaskID -> Update
+moveTaskUp :: Task.TaskID -> Update
 moveTaskUp taskID taskell = do
     task <- getTask taskID taskell
-    case task ^. TTT.parent of
-        TTT.ParentTask parentID -> updateTask (TTT.moveUp taskID) parentID taskell
-        TTT.ParentList parentID -> updateList (TTT.moveUp taskID) parentID taskell
+    case task ^. Task.parent of
+        Task.ParentTask parentID -> updateTask (Task.moveUp taskID) parentID taskell
+        Task.ParentList parentID -> updateList (Task.moveUp taskID) parentID taskell
 
-moveTaskDown :: TTT.TaskID -> Update
+moveTaskDown :: Task.TaskID -> Update
 moveTaskDown taskID taskell = do
     task <- getTask taskID taskell
-    case task ^. TTT.parent of
-        TTT.ParentTask parentID -> updateTask (TTT.moveDown taskID) parentID taskell
-        TTT.ParentList parentID -> updateList (TTT.moveDown taskID) parentID taskell
+    case task ^. Task.parent of
+        Task.ParentTask parentID -> updateTask (Task.moveDown taskID) parentID taskell
+        Task.ParentList parentID -> updateList (Task.moveDown taskID) parentID taskell
 
 moveTaskLR ::
-       (TTL.ListID -> TT.Taskell -> Maybe TTL.ListID)
-    -> (TTT.TaskID -> TTL.List -> TTL.List)
-    -> TTT.TaskID
+       (List.ListID -> Taskell.Taskell -> Maybe List.ListID)
+    -> (Task.TaskID -> List.List -> List.List)
+    -> Task.TaskID
     -> Update
 moveTaskLR getListLR addTaskTB taskID taskell = do
     task <- getTask taskID taskell
-    case task ^. TTT.parent of
-        TTT.ParentTask _ -> pure taskell
-        TTT.ParentList currentListID -> do
+    case task ^. Task.parent of
+        Task.ParentTask _ -> pure taskell
+        Task.ParentList currentListID -> do
             case getListLR currentListID taskell of
                 Nothing -> pure taskell
                 Just intoID ->
-                    updateList (TTL.removeFromList taskID) currentListID taskell >>=
+                    updateList (List.removeFromList taskID) currentListID taskell >>=
                     updateList (addTaskTB taskID) intoID >>=
-                    updateTask (TTT.setParentList intoID) taskID
+                    updateTask (Task.setParentList intoID) taskID
 
-moveTaskLeft :: TTT.TaskID -> Update
-moveTaskLeft = moveTaskLR getListLeft TTL.addTask
+moveTaskLeft :: Task.TaskID -> Update
+moveTaskLeft = moveTaskLR getListLeft List.addTask
 
-moveTaskRight :: TTT.TaskID -> Update
-moveTaskRight = moveTaskLR getListRight TTL.addTask
+moveTaskRight :: Task.TaskID -> Update
+moveTaskRight = moveTaskLR getListRight List.addTask
 
-moveTaskLeftTop :: TTT.TaskID -> Update
-moveTaskLeftTop = moveTaskLR getListLeft TTL.addTaskTop
+moveTaskLeftTop :: Task.TaskID -> Update
+moveTaskLeftTop = moveTaskLR getListLeft List.addTaskTop
 
-moveTaskRightTop :: TTT.TaskID -> Update
-moveTaskRightTop = moveTaskLR getListRight TTL.addTaskTop
+moveTaskRightTop :: Task.TaskID -> Update
+moveTaskRightTop = moveTaskLR getListRight List.addTaskTop
 
 -- removing tasks
-removeChildren :: TTT.TaskID -> Update
+removeChildren :: Task.TaskID -> Update
 removeChildren taskID taskell = do
     task <- getTask taskID taskell
-    foldM (flip removeFromTasks) taskell (task ^. TTT.tasks)
+    foldM (flip removeFromTasks) taskell (task ^. Task.tasks)
 
-removeFromTasks :: TTT.TaskID -> Update
+removeFromTasks :: Task.TaskID -> Update
 removeFromTasks taskID taskell = do
     removedChildren <- removeChildren taskID taskell
-    let removed = HM.delete taskID (removedChildren ^. TT.tasks)
-    let removedImmeditate = TTT.removeFromTask taskID <$> removed
-    pure (taskell & TT.tasks .~ removedImmeditate)
+    let removed = HM.delete taskID (removedChildren ^. Taskell.tasks)
+    let removedImmeditate = Task.removeFromTask taskID <$> removed
+    pure (taskell & Taskell.tasks .~ removedImmeditate)
 
-removeFromLists :: TTT.TaskID -> Update
+removeFromLists :: Task.TaskID -> Update
 removeFromLists taskID taskell = do
     task <- getTask taskID taskell
-    case task ^. TTT.parent of
-        TTT.ParentList listID -> updateList (TTL.removeFromList taskID) listID taskell
+    case task ^. Task.parent of
+        Task.ParentList listID -> updateList (List.removeFromList taskID) listID taskell
         _ -> pure taskell
 
-removeTasks :: TTT.TaskID -> Update
+removeTasks :: Task.TaskID -> Update
 removeTasks taskID taskell = removeFromLists taskID taskell >>= removeFromTasks taskID
 
 -- contributors
-findContributorFromSign :: TT.Taskell -> Text -> Maybe TTC.ContributorID
+findContributorFromSign :: Taskell.Taskell -> Text -> Maybe Contributor.ContributorID
 findContributorFromSign tsk sign = L.headMaybe matches
   where
-    cs = tsk ^. TT.contributors
-    matches = HM.keys $ HM.filter (TTC.hasSign sign) cs
+    cs = tsk ^. Taskell.contributors
+    matches = HM.keys $ HM.filter (Contributor.hasSign sign) cs
 
-getContributor :: TTC.ContributorID -> TT.Taskell -> Error.EitherError TTC.Contributor
+getContributor ::
+       Contributor.ContributorID -> Taskell.Taskell -> Error.EitherError Contributor.Contributor
 getContributor contributorID taskell =
     Error.mEither
         ("Unknown reference: " <> tshow contributorID)
-        (HM.lookup contributorID (taskell ^. TT.contributors))
+        (HM.lookup contributorID (taskell ^. Taskell.contributors))
 
 --tags
-getTag :: Tag.TagID -> TT.Taskell -> Error.EitherError Tag.Tag
+getTag :: Tag.TagID -> Taskell.Taskell -> Error.EitherError Tag.Tag
 getTag tagID taskell =
-    Error.mEither ("Unknown reference: " <> tshow tagID) (HM.lookup tagID (taskell ^. TT.tags))
+    Error.mEither ("Unknown reference: " <> tshow tagID) (HM.lookup tagID (taskell ^. Taskell.tags))
 
 -- Taskell
 rename :: Text -> Update
-rename title taskell = pure (taskell & TT.title .~ title)
+rename title taskell = pure (taskell & Taskell.title .~ title)
 
 changeDescription :: Text -> Update
-changeDescription title taskell = pure (taskell & TT.description .~ title)
+changeDescription title taskell = pure (taskell & Taskell.description .~ title)

@@ -6,9 +6,9 @@ import qualified RIO.Seq as Seq
 
 import Taskell.Data.Taskell (Taskell(..))
 import Taskell.Data.Types.Contributor (Contributor(..), ContributorID(..), Contributors)
-import Taskell.Data.Types.List as L (List(..), ListID(..), ListIDs, Lists)
+import Taskell.Data.Types.List (List(..), ListID(..), ListIDs, Lists)
 import Taskell.Data.Types.Tag (Tag(..), TagID(..), Tags)
-import Taskell.Data.Types.Task as T (Parent(..), Task(..), TaskID(..), Tasks)
+import Taskell.Data.Types.Task (Parent(..), Task(..), TaskID(..), Tasks)
 
 -- contributors
 contributor1, contributor2, contributor3 :: Contributor

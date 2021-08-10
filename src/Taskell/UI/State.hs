@@ -10,11 +10,11 @@ import Import
 
 import Lens.Micro.TH (makeLenses)
 
-import qualified Taskell.Data.Taskell as T (Taskell)
+import qualified Taskell.Data.Taskell as Taskell (Taskell)
 
 newtype State =
     State
-        { _taskell :: T.Taskell
+        { _taskell :: Taskell.Taskell
         }
 
 type StateReader = Reader State
