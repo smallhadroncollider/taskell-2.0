@@ -61,8 +61,9 @@ expected =
 
 -- tests
 spec :: Spec
-spec = do
-    describe "cursor position" $ do
-        let editors = L.scanl' (>>=) start operations
-        let cursors = ((\e -> (e ^. cursor, dump e)) <$>) <$> editors
-        it "cursors" $ cursors `shouldBe` (Right <$> expected)
+spec =
+    parallel $ do
+        describe "cursor position" $ do
+            let editors = L.scanl' (>>=) start operations
+            let cursors = ((\e -> (e ^. cursor, dump e)) <$>) <$> editors
+            it "cursors" $ cursors `shouldBe` (Right <$> expected)

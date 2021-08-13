@@ -151,7 +151,7 @@ taskS level task = do
 serialize' :: SerializedTaskell -> DictionaryReader Utf8Builder
 serialize' tsk = do
     parts <- traverse ($ tsk) [titleS, descriptionS, contributorsS, horizontalRuleS, listsS]
-    pure $ "" <> mconcat (L.intersperse eol (catMaybes parts))
+    pure $ mconcat (L.intersperse eol (catMaybes parts)) <> eol
 
 serialize :: Dictionary -> Taskell.Taskell -> Error.EitherError Utf8Builder
 serialize dic tsk = do

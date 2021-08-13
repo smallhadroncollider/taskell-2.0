@@ -10,10 +10,14 @@ module Taskell.Data.Task
     , belongsToTask
     , rename
     , changeDescription
+    , changeCompleted
     , setParentList
     , setParentTask
+    , addSubTask
     , addContributor
     , setContributors
+    , addTag
+    , setTags
     ) where
 
 import RIO
@@ -22,8 +26,9 @@ import qualified RIO.Seq as Seq
 import Lens.Micro ((<>~))
 
 import Taskell.Data.Types.Contributor (ContributorID)
-import Taskell.Data.Types.ID (ContributorIDs)
+import Taskell.Data.Types.ID (ContributorIDs, TagIDs)
 import Taskell.Data.Types.List (ListID)
+import Taskell.Data.Types.Tag (TagID)
 import Taskell.Data.Types.Task
 
 new :: Text -> Parent -> Task
@@ -34,6 +39,9 @@ rename newTitle = title .~ newTitle
 
 changeDescription :: Text -> Update
 changeDescription newDescription = description .~ newDescription
+
+changeCompleted :: Bool -> Update
+changeCompleted cmpl = complete .~ cmpl
 
 -- parent
 belongsToTask :: TaskID -> Task -> Bool
@@ -58,9 +66,19 @@ removeFromRelated taskID = related %~ Seq.filter (/= taskID)
 removeFromTask :: TaskID -> Update
 removeFromTask taskID = removeFromSubTasks taskID . removeFromRelated taskID
 
+addSubTask :: TaskID -> Update
+addSubTask taskID = tasks %~ (Seq.|> taskID)
+
 -- contributors
 addContributor :: ContributorID -> Update
 addContributor contributorID = assigned <>~ [contributorID]
 
 setContributors :: ContributorIDs -> Update
 setContributors contributorIDs = assigned .~ contributorIDs
+
+-- tags
+addTag :: TagID -> Update
+addTag tagID = tags <>~ [tagID]
+
+setTags :: TagIDs -> Update
+setTags tagIDs = tags .~ tagIDs

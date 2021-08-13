@@ -101,8 +101,12 @@ taskP dictionary level =
         tags <- P.option [] (tagsP dictionary level)
         related <- P.option [] (relatedsP dictionary level)
         contributors <- P.option [] (contributorsP dictionary level)
+        let desc =
+                if description == Just ""
+                    then Nothing
+                    else description
         pure $
-            emptyTask & taskComplete .~ complete & taskTitle .~ ttl & taskDescription .~ description &
+            emptyTask & taskComplete .~ complete & taskTitle .~ ttl & taskDescription .~ desc &
             taskTasks .~ tasks &
             taskTags .~ tags &
             taskRelated .~ related &

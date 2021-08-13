@@ -1,3 +1,5 @@
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+
 module Taskell.Data.Types.ID
     ( TaskID(..)
     , TaskIDs
@@ -16,49 +18,35 @@ module Taskell.Data.Types.ID
 import RIO
 import qualified RIO.Seq as Seq
 
-import Data.Hashable (hashWithSalt)
-
 type ID = Int
 
 -- tasks
 newtype TaskID =
     TaskID ID
-    deriving (Eq, Show)
+    deriving (Eq, Ord, Num, Show, Hashable)
 
 type TaskIDs = Seq TaskID
-
-instance Hashable TaskID where
-    hashWithSalt a (TaskID b) = hashWithSalt a b
 
 -- lists
 newtype ListID =
     ListID ID
-    deriving (Eq, Show)
+    deriving (Eq, Ord, Num, Show, Hashable)
 
 type ListIDs = Seq ListID
-
-instance Hashable ListID where
-    hashWithSalt a (ListID b) = hashWithSalt a b
 
 -- contributors
 newtype ContributorID =
     ContributorID ID
-    deriving (Eq, Show)
+    deriving (Eq, Ord, Num, Show, Hashable)
 
 type ContributorIDs = Seq ContributorID
-
-instance Hashable ContributorID where
-    hashWithSalt a (ContributorID b) = hashWithSalt a b
 
 -- tags
 newtype TagID =
     TagID ID
-    deriving (Eq, Show)
+    deriving (Eq, Ord, Num, Show, Hashable)
 
 type TagIDs = Seq TagID
-
-instance Hashable TagID where
-    hashWithSalt a (TagID b) = hashWithSalt a b
 
 -- functions
 movePos :: Eq a => Int -> a -> Seq a -> Seq a

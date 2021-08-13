@@ -15,9 +15,12 @@ module Taskell.Data.Taskell
     , removeList
     , addList
     , addTaskToList
+    , addTaskToTask
     , getTask
     , renameTask
     , changeTaskDescription
+    , changeTaskCompleted
+    , addTagToTask
     , setTaskContributors
     , moveTaskUp
     , moveTaskDown
@@ -36,10 +39,12 @@ import qualified RIO.List as L
 import qualified RIO.Seq as Seq
 
 import qualified Taskell.Data.List as List
+import qualified Taskell.Data.Tag as Tag
 import qualified Taskell.Data.Task as Task
 import qualified Taskell.Data.Types.Contributor as Contributor
 import qualified Taskell.Data.Types.ID as ID
 import qualified Taskell.Data.Types.List as List
+import qualified Taskell.Data.Types.NextID as NextID
 import qualified Taskell.Data.Types.Tag as Tag
 import qualified Taskell.Data.Types.Task as Task
 import qualified Taskell.Data.Types.Taskell as Taskell
@@ -84,11 +89,13 @@ updateList fn listID taskell = pure (taskell & Taskell.lists %~ HM.adjust fn lis
 renameList :: Text -> List.ListID -> Update
 renameList title = updateList (List.rename title)
 
-addList :: Text -> List.ListID -> Update
-addList title listID taskell =
-    pure
-        (taskell & Taskell.lists %~ HM.insert listID (List.new title) &
-         Taskell.listsOrder %~ (<> Seq.singleton listID))
+addList :: Text -> Result (List.ListID, Taskell.Taskell)
+addList title taskell = do
+    let (listID, nids) = NextID.nextListID $ taskell ^. Taskell.nextID
+    let tsk =
+            taskell & Taskell.nextID .~ nids & Taskell.lists %~ HM.insert listID (List.new title) &
+            Taskell.listsOrder %~ (<> Seq.singleton listID)
+    pure (listID, tsk)
 
 removeList :: List.ListID -> Update
 removeList listID taskell =
@@ -110,8 +117,11 @@ updateTasks fn taskell = pure (taskell & Taskell.tasks %~ fn)
 updateTask :: Task.Update -> Task.TaskID -> Update
 updateTask fn taskID = updateTasks (HM.adjust fn taskID)
 
-addTask :: Task.Task -> Task.TaskID -> Update
-addTask task taskID = updateTasks (HM.insert taskID task)
+addTask :: Task.Task -> Result (Task.TaskID, Taskell.Taskell)
+addTask task taskell = do
+    let (taskID, nids) = NextID.nextTaskID $ taskell ^. Taskell.nextID
+    tsk <- updateTasks (HM.insert taskID task) (taskell & Taskell.nextID .~ nids)
+    pure (taskID, tsk)
 
 taskIDsToTasks :: Task.TaskIDs -> Result (Seq Task.Task)
 taskIDsToTasks taskIDs taskell = traverse (`getTask` taskell) taskIDs
@@ -139,16 +149,31 @@ getTask taskID taskell =
         ("Unknown reference: " <> tshow taskID)
         (HM.lookup taskID (taskell ^. Taskell.tasks))
 
-addTaskToList :: Text -> Task.TaskID -> List.ListID -> Update
-addTaskToList title taskID listID taskell =
-    addTask (Task.new title (Task.ParentList listID)) taskID taskell >>=
-    updateList (List.addTask taskID) listID
+addTaskToList :: Text -> List.ListID -> Result (Task.TaskID, Taskell.Taskell)
+addTaskToList title listID taskell = do
+    (taskID, tsk) <- addTask (Task.new title (Task.ParentList listID)) taskell
+    tsk' <- updateList (List.addTask taskID) listID tsk
+    pure (taskID, tsk')
+
+addTaskToTask :: Text -> Task.TaskID -> Result (Task.TaskID, Taskell.Taskell)
+addTaskToTask title parentID taskell = do
+    (taskID, tsk) <- addTask (Task.new title (Task.ParentTask parentID)) taskell
+    tsk' <- updateTask (Task.addSubTask taskID) parentID tsk
+    pure (taskID, tsk')
 
 renameTask :: Text -> Task.TaskID -> Update
 renameTask title = updateTask (Task.rename title)
 
 changeTaskDescription :: Text -> Task.TaskID -> Update
 changeTaskDescription title = updateTask (Task.changeDescription title)
+
+changeTaskCompleted :: Bool -> Task.TaskID -> Update
+changeTaskCompleted complete = updateTask (Task.changeCompleted complete)
+
+addTagToTask :: Task.TaskID -> Text -> Update
+addTagToTask taskID tag tsk = do
+    let (tagID, tsk') = findOrCreateTag tag tsk
+    updateTask (Task.addTag tagID) taskID tsk' >>= updateTag (Tag.addTask taskID) tagID
 
 setTaskContributors :: Contributor.ContributorIDs -> Task.TaskID -> Update
 setTaskContributors contributorIDs = updateTask (Task.setContributors contributorIDs)
@@ -234,9 +259,31 @@ getContributor contributorID taskell =
         (HM.lookup contributorID (taskell ^. Taskell.contributors))
 
 --tags
+updateTags :: (Tag.Tags -> Tag.Tags) -> Update
+updateTags fn taskell = pure (taskell & Taskell.tags %~ fn)
+
+updateTag :: Tag.Update -> Tag.TagID -> Update
+updateTag fn taskID = updateTags (HM.adjust fn taskID)
+
 getTag :: Tag.TagID -> Taskell.Taskell -> Error.EitherError Tag.Tag
 getTag tagID taskell =
     Error.mEither ("Unknown reference: " <> tshow tagID) (HM.lookup tagID (taskell ^. Taskell.tags))
+
+findTag :: Text -> Taskell.Taskell -> Maybe Tag.TagID
+findTag text taskell =
+    L.headMaybe . HM.keys $ HM.filter (Tag.matches text) (taskell ^. Taskell.tags)
+
+addTag :: Text -> Taskell.Taskell -> (Tag.TagID, Taskell.Taskell)
+addTag text taskell = (tagID, tsk & Taskell.tags %~ HM.insert tagID (Tag.create text))
+  where
+    (tagID, nids) = NextID.nextTagID (taskell ^. Taskell.nextID)
+    tsk = taskell & Taskell.nextID .~ nids
+
+findOrCreateTag :: Text -> Taskell.Taskell -> (Tag.TagID, Taskell.Taskell)
+findOrCreateTag text tsk =
+    case findTag text tsk of
+        Nothing -> addTag text tsk
+        Just tagID -> (tagID, tsk)
 
 -- Taskell
 rename :: Text -> Update

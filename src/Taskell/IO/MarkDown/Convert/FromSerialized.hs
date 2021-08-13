@@ -8,9 +8,6 @@ import RIO
 import qualified RIO.HashMap as HM
 import qualified RIO.Seq as Seq
 
-import Lens.Micro ((+~))
-import Lens.Micro.TH (makeLenses)
-
 import qualified Taskell.Data.Taskell as Taskell
 import qualified Taskell.Data.Types.Contributor as Contributor
 import qualified Taskell.Data.Types.List as List
@@ -21,53 +18,42 @@ import qualified Taskell.Error as Error
 import Taskell.IO.MarkDown.Parser.Document (parse)
 import Taskell.IO.MarkDown.Types
 
--- ID tracking
-data NextID =
-    NextID
-        { _nextTaskID :: !Int
-        , _nextListID :: !Int
-        }
-
-makeLenses ''NextID
-
-incList :: NextID -> NextID
-incList = nextListID +~ 1
-
-incTask :: NextID -> NextID
-incTask = nextTaskID +~ 1
-
-idStart :: NextID
-idStart = NextID 1 1
-
 -- conversion
 setDescription :: Maybe Text -> Taskell.Taskell -> Task.TaskID -> Error.EitherError Taskell.Taskell
-setDescription Nothing tsk _ = pure $ tsk
+setDescription Nothing tsk _ = pure tsk
 setDescription (Just desc) tsk tID = Taskell.changeTaskDescription desc tID tsk
 
 parsedTaskToTaskell ::
-       List.ListID
-    -> (NextID, Taskell.Taskell)
-    -> SerializedTask
-    -> Error.EitherError (NextID, Taskell.Taskell)
-parsedTaskToTaskell listID (ids, tsk) t = do
-    let taskID = Task.TaskID (ids ^. nextTaskID)
-    updated <- Taskell.addTaskToList (t ^. taskTitle) taskID listID tsk
+       Task.TaskID -> Taskell.Taskell -> SerializedTask -> Error.EitherError Taskell.Taskell
+parsedTaskToTaskell taskID tsk t = do
     let conts =
             Seq.fromList . catMaybes $
             Taskell.findContributorFromSign tsk <$> (t ^. taskContributors)
-    updated' <- Taskell.setTaskContributors conts taskID updated
-    updated'' <- setDescription (t ^. taskDescription) updated' taskID
-    pure (incTask ids, updated'')
+    updated <- Taskell.setTaskContributors conts taskID tsk
+    updated' <- setDescription (t ^. taskDescription) updated taskID
+    updated'' <- Taskell.changeTaskCompleted (t ^. taskComplete) taskID updated'
+    updated''' <- foldM (flip (Taskell.addTagToTask taskID)) updated'' (t ^. taskTags)
+    foldM (parsedTaskToTaskellTask taskID) updated''' (t ^. taskTasks)
 
-parsedListToTaskell ::
-       (NextID, Taskell.Taskell) -> SerializedList -> Error.EitherError (NextID, Taskell.Taskell)
-parsedListToTaskell (ids, tsk) l = do
-    let listID = List.ListID (ids ^. nextListID)
-    updated <- Taskell.addList (l ^. listTitle) listID tsk
-    foldM (parsedTaskToTaskell listID) (incList ids, updated) (l ^. listTasks)
+parsedTaskToTaskellTask ::
+       Task.TaskID -> Taskell.Taskell -> SerializedTask -> Error.EitherError Taskell.Taskell
+parsedTaskToTaskellTask parentID tsk t = do
+    (taskID, updated) <- Taskell.addTaskToTask (t ^. taskTitle) parentID tsk
+    parsedTaskToTaskell taskID updated t
+
+parsedTaskToTaskellList ::
+       List.ListID -> Taskell.Taskell -> SerializedTask -> Error.EitherError Taskell.Taskell
+parsedTaskToTaskellList parentID tsk t = do
+    (taskID, updated) <- Taskell.addTaskToList (t ^. taskTitle) parentID tsk
+    parsedTaskToTaskell taskID updated t
+
+parsedListToTaskell :: Taskell.Taskell -> SerializedList -> Error.EitherError Taskell.Taskell
+parsedListToTaskell tsk l = do
+    (listID, updated) <- Taskell.addList (l ^. listTitle) tsk
+    foldM (parsedTaskToTaskellList listID) updated (l ^. listTasks)
 
 parsedListsToTaskell :: Taskell.Taskell -> [SerializedList] -> Error.EitherError Taskell.Taskell
-parsedListsToTaskell tsk parsedLists = snd <$> foldM parsedListToTaskell (idStart, tsk) parsedLists
+parsedListsToTaskell = foldM parsedListToTaskell
 
 parsedContributorToContributor :: SerializedContributor -> Contributor.Contributor
 parsedContributorToContributor parsed =

@@ -7,6 +7,7 @@ import qualified RIO.Seq as Seq
 import Taskell.Data.Taskell (Taskell(..))
 import Taskell.Data.Types.Contributor (Contributor(..), ContributorID(..), Contributors)
 import Taskell.Data.Types.List (List(..), ListID(..), ListIDs, Lists)
+import Taskell.Data.Types.NextID (NextID, nextIDs, setContributorID, setListID, setTagID, setTaskID)
 import Taskell.Data.Types.Tag (Tag(..), TagID(..), Tags)
 import Taskell.Data.Types.Task (Parent(..), Task(..), TaskID(..), Tasks)
 
@@ -95,7 +96,7 @@ task7 =
         (TaskID <$> Seq.fromList [8])
         []
         []
-        []
+        [TagID 3]
 
 task8 = Task "Sub Sub Sub Task" (ParentTask (TaskID 7)) "Sub sub sub task" False [] [] [] []
 
@@ -135,6 +136,11 @@ tag3 = Tag "spatula" [TaskID 4, TaskID 5]
 allTags :: Tags
 allTags = HM.fromList [(TagID 1, tag1), (TagID 2, tag2), (TagID 3, tag3)]
 
+-- ids
+allIDs :: NextID
+allIDs = setTaskID 8 . setListID 2 . setContributorID 3 . setTagID 3 $ nextIDs
+
 -- full
 tmpData :: Taskell
-tmpData = Taskell "Test" "Some test data" allContributors allLists allListsOrder allTasks allTags
+tmpData =
+    Taskell "Test" "Some test data" allContributors allLists allListsOrder allTasks allTags allIDs

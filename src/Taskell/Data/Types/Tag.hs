@@ -5,6 +5,7 @@ module Taskell.Data.Types.Tag
     , Tags
     , TagID(..)
     , TagIDs
+    , Update
     , name
     , tasks
     ) where
@@ -25,3 +26,5 @@ data Tag =
 makeLenses ''Tag
 
 type Tags = HashMap TagID Tag
+
+type Update = Tag -> Tag
