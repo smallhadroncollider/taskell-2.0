@@ -14,6 +14,7 @@ module Taskell.Data.Task
     , setParentList
     , setParentTask
     , addSubTask
+    , addRelated
     , addContributor
     , setContributors
     , addTag
@@ -23,7 +24,7 @@ module Taskell.Data.Task
 import RIO
 import qualified RIO.Seq as Seq
 
-import Lens.Micro ((<>~))
+import Taskell.Utility.Seq (appendUnique)
 
 import Taskell.Data.Types.Contributor (ContributorID)
 import Taskell.Data.Types.ID (ContributorIDs, TagIDs)
@@ -56,6 +57,10 @@ setParentList listID = parent .~ ParentList listID
 setParentTask :: TaskID -> Update
 setParentTask taskID = parent .~ ParentTask taskID
 
+-- related
+addRelated :: TaskID -> Update
+addRelated taskID = related %~ appendUnique taskID
+
 -- removing tasks from tasks
 removeFromSubTasks :: TaskID -> Update
 removeFromSubTasks taskID = tasks %~ Seq.filter (/= taskID)
@@ -71,14 +76,14 @@ addSubTask taskID = tasks %~ (Seq.|> taskID)
 
 -- contributors
 addContributor :: ContributorID -> Update
-addContributor contributorID = assigned <>~ [contributorID]
+addContributor contributorID = assigned %~ appendUnique contributorID
 
 setContributors :: ContributorIDs -> Update
 setContributors contributorIDs = assigned .~ contributorIDs
 
 -- tags
 addTag :: TagID -> Update
-addTag tagID = tags <>~ [tagID]
+addTag tagID = tags %~ appendUnique tagID
 
 setTags :: TagIDs -> Update
 setTags tagIDs = tags .~ tagIDs

@@ -116,7 +116,7 @@ taskContributorS task =
             s . ((display prefix <> " ") <>) . mconcat . L.intersperse ", " $
                 display . ("*@" <>) . (<> "*") <$> cnts
 
-relatedLinkS :: (Text, Text, Text) -> Text
+relatedLinkS :: Related -> Text
 relatedLinkS (lTitle, tTitle, lnk) = mconcat ["[", lTitle, " / ", tTitle, "](#", lnk, ")"]
 
 relatedS :: SerializedTask -> Serializer

@@ -93,19 +93,22 @@ spec =
                         , (Task.TaskID 11, "Some forks!")
                         , (Task.TaskID 12, "Sporks are too sporky")
                         ]
-            xit "parses the related tasks" $ do
+            it "parses the related tasks" $ do
                 ((^. Task.related) <$>) . (^. Taskell.tasks) <$>
                     result `shouldBe`
                     Right
-                        [ (Task.TaskID 1, [Task.TaskID 4])
-                        , (Task.TaskID 2, [Task.TaskID 6])
-                        , (Task.TaskID 3, [Task.TaskID 5])
+                        [ (Task.TaskID 1, [Task.TaskID 7, Task.TaskID 8])
+                        , (Task.TaskID 2, [])
+                        , (Task.TaskID 3, [])
                         , (Task.TaskID 4, [])
-                        , (Task.TaskID 5, [Task.TaskID 1, Task.TaskID 3])
-                        , (Task.TaskID 6, [])
-                        , (Task.TaskID 7, [])
-                        , (Task.TaskID 8, [])
-                        , (Task.TaskID 9, [])
+                        , (Task.TaskID 5, [Task.TaskID 9])
+                        , (Task.TaskID 6, [Task.TaskID 8])
+                        , (Task.TaskID 7, [Task.TaskID 1])
+                        , (Task.TaskID 8, [Task.TaskID 6, Task.TaskID 1])
+                        , (Task.TaskID 9, [Task.TaskID 5])
+                        , (Task.TaskID 10, [])
+                        , (Task.TaskID 11, [])
+                        , (Task.TaskID 12, [])
                         ]
         describe "contributors" $ do
             it "parses the task contributors" $ do

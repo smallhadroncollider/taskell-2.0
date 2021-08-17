@@ -59,14 +59,14 @@ tagsP dictionary level =
         _ <- indent dictionary level
         tagP `P.sepBy1` P.lexeme (P.char ',')
 
-relatedP :: P.Parser (Text, Text, Text)
+relatedP :: P.Parser Related
 relatedP = do
     lTitle <- P.string "[" *> P.takeTo " / "
     tTitle <- P.takeTo "](#"
     lnk <- P.takeTo ")"
     pure (lTitle, tTitle, lnk)
 
-relatedsP :: IndentedParser [(Text, Text, Text)]
+relatedsP :: IndentedParser [Related]
 relatedsP dictionary level =
     stripEmptyLines $ do
         _ <- indent dictionary level

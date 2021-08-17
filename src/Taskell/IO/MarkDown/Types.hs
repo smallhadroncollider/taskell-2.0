@@ -22,6 +22,8 @@ defaultDictionary :: Dictionary
 defaultDictionary = Dictionary "Contributors" "**Due**:" "**Related**:" "**Contributors**:" 4
 
 -- intermediary data format
+type Related = (Text, Text, Text)
+
 data SerializedTask =
     SerializedTask
         { _taskTitle :: !Text
@@ -30,7 +32,7 @@ data SerializedTask =
         -- , _taskDue :: !(Maybe Text)
         , _taskTasks :: ![SerializedTask]
         , _taskTags :: ![Text]
-        , _taskRelated :: ![(Text, Text, Text)]
+        , _taskRelated :: ![Related]
         , _taskContributors :: ![Text]
         }
     deriving (Eq, Show)

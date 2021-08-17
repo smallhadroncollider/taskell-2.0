@@ -22,6 +22,7 @@ module Taskell.Data.Taskell
     , changeTaskCompleted
     , addTagToTask
     , setTaskContributors
+    , addTaskRelationship
     , moveTaskUp
     , moveTaskDown
     , moveTaskLeft
@@ -30,6 +31,7 @@ module Taskell.Data.Taskell
     , moveTaskRightTop
     , findContributorFromSign
     , getContributor
+    , addContributor
     , getTag
     ) where
 
@@ -161,6 +163,10 @@ addTaskToTask title parentID taskell = do
     tsk' <- updateTask (Task.addSubTask taskID) parentID tsk
     pure (taskID, tsk')
 
+addTaskRelationship :: (Task.TaskID, Task.TaskID) -> Update
+addTaskRelationship (tskA, tskB) tsk =
+    updateTask (Task.addRelated tskA) tskB tsk >>= updateTask (Task.addRelated tskB) tskA
+
 renameTask :: Text -> Task.TaskID -> Update
 renameTask title = updateTask (Task.rename title)
 
@@ -257,6 +263,13 @@ getContributor contributorID taskell =
     Error.mEither
         ("Unknown reference: " <> tshow contributorID)
         (HM.lookup contributorID (taskell ^. Taskell.contributors))
+
+addContributor ::
+       Contributor.Contributor -> Taskell.Taskell -> (Contributor.ContributorID, Taskell.Taskell)
+addContributor cont taskell = (contID, tsk & Taskell.contributors %~ HM.insert contID cont)
+  where
+    (contID, nids) = NextID.nextContributorID (taskell ^. Taskell.nextID)
+    tsk = taskell & Taskell.nextID .~ nids
 
 --tags
 updateTags :: (Tag.Tags -> Tag.Tags) -> Update

@@ -60,7 +60,7 @@ taskTasksC task rel tsk = do
     tasks <- traverse (`Taskell.getTask` tsk) (toList $ task ^. Task.tasks)
     traverse (taskC' rel tsk) tasks
 
-taskRelatedC :: Task.Task -> RelatedDictionary -> Error.EitherError [(Text, Text, Text)]
+taskRelatedC :: Task.Task -> RelatedDictionary -> Error.EitherError [Related]
 taskRelatedC task rel = do
     traverse
         (Error.mEither "Unknown related task" . (`HM.lookup` rel))
@@ -98,7 +98,7 @@ listsC rel tsk = do
     traverse (listC rel tsk) lists
 
 -- related
-type RelatedDictionary = HM.HashMap Task.TaskID (Text, Text, Text)
+type RelatedDictionary = HM.HashMap Task.TaskID Related
 
 tasksForList ::
        Taskell.Taskell -> (List.ListID, Text) -> Error.EitherError (Seq (Task.TaskID, (Text, Text)))
@@ -107,7 +107,7 @@ tasksForList tsk (lID, title) = do
     let taskTitles = second (^. Task.title) <$> tasks -- [(TaskID 1, "First Task"), ...]
     pure $ second (title, ) <$> taskTitles
 
-merge :: (Text, (Task.TaskID, (Text, Text))) -> (Task.TaskID, (Text, Text, Text))
+merge :: (Text, (Task.TaskID, (Text, Text))) -> (Task.TaskID, Related)
 merge (lnk, (tID, (lTitle, tTitle))) = (tID, (lTitle, tTitle, lnk))
 
 relatedDictionary :: Taskell.Taskell -> Error.EitherError RelatedDictionary
