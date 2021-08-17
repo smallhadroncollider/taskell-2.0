@@ -26,6 +26,7 @@ setDescription :: Maybe Text -> Task.TaskID -> Taskell.Taskell -> Error.EitherEr
 setDescription Nothing _ tsk = pure tsk
 setDescription (Just desc) tID tsk = Taskell.changeTaskDescription desc tID tsk
 
+-- relationships
 type Relation = (Task.TaskID, [Related])
 
 type WithRelationships = (Taskell.Taskell, [Relation])
@@ -46,6 +47,7 @@ addRelationships (tsk, rels) = do
     let linkMap = HM.fromList $ zip (toList links) (toList $ fst <$> flat)
     foldM (addRelationships' linkMap) tsk rels
 
+-- tasks
 serialisedTaskToTaskell ::
        Task.TaskID -> WithRelationships -> SerializedTask -> Error.EitherError WithRelationships
 serialisedTaskToTaskell taskID (tsk, rels) t = do
@@ -75,6 +77,7 @@ serialisedTaskToTaskellList parentID (tsk, rels) t = do
     (taskID, updated) <- Taskell.addTaskToList (t ^. taskTitle) parentID tsk
     serialisedTaskToTaskell taskID (updated, rels) t
 
+-- lists
 serialisedListToTaskell ::
        WithRelationships -> SerializedList -> Error.EitherError WithRelationships
 serialisedListToTaskell (tsk, rels) l = do
@@ -85,6 +88,7 @@ serialisedListsToTaskell ::
        Taskell.Taskell -> [SerializedList] -> Error.EitherError WithRelationships
 serialisedListsToTaskell tsk = foldM serialisedListToTaskell (tsk, [])
 
+-- contributors
 serialisedContributorToContributor :: SerializedContributor -> Contributor.Contributor
 serialisedContributorToContributor serialised =
     Contributor.Contributor
@@ -95,6 +99,7 @@ serialisedContributorToContributor serialised =
 contributors :: [SerializedContributor] -> [Contributor.Contributor]
 contributors = (serialisedContributorToContributor <$>)
 
+-- convert
 serialisedToTaskell :: SerializedTaskell -> Error.EitherError Taskell.Taskell
 serialisedToTaskell serialised = do
     let tsk =

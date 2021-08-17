@@ -83,7 +83,7 @@ spec =
                                   False
                                   [ SerializedTask
                                         "Sub Sub Task"
-                                        (Just "Sub sub task")
+                                        Nothing
                                         True
                                         [ SerializedTask
                                               "Sub Sub Sub Task"

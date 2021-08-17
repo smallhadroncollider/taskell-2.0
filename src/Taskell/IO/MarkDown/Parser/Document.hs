@@ -11,7 +11,8 @@ import Taskell.IO.MarkDown.Types
 
 descriptionP :: Text -> P.Parser Text
 descriptionP cTitle =
-    T.intercalate "\n" <$> P.lexeme (P.manyTill P.line (contributorsTitleP cTitle))
+    T.intercalate "\n" <$>
+    P.lexeme (P.manyTill P.line (contributorsTitleP cTitle <|> P.lookAhead hrP))
 
 contributorsTitleP :: Text -> P.Parser ()
 contributorsTitleP cTitle = void . P.lexeme $ P.string ("## " <> cTitle)

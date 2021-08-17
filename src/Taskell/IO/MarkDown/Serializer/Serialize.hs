@@ -1,5 +1,6 @@
 module Taskell.IO.MarkDown.Serializer.Serialize
     ( serialize
+    , taskS
     ) where
 
 import RIO
@@ -82,7 +83,7 @@ completeS :: Bool -> Utf8Builder
 completeS True = "x"
 completeS False = " "
 
-taskTitleS :: Int -> SerializedTask -> DictionaryReader Utf8Builder
+taskTitleS :: Int -> SerializedTask -> Serializer
 taskTitleS level task = do
     let title = task ^. taskTitle
     let titlePrefix =
@@ -90,7 +91,7 @@ taskTitleS level task = do
                 then "###"
                 else "- [" <> completeS (task ^. taskComplete) <> "]"
     ident <- indent (level - 1)
-    pure $ mconcat [ident, titlePrefix, " ", display title, eol]
+    s $ mconcat [ident, titlePrefix, " ", display title]
 
 taskDescriptionS :: SerializedTask -> Serializer
 taskDescriptionS task = pure $ display <$> task ^. taskDescription
@@ -99,7 +100,7 @@ subTasksS :: Int -> SerializedTask -> Serializer
 subTasksS level task =
     case task ^. taskTasks of
         [] -> pure Nothing
-        tsks -> pure . mconcat <$> traverse (taskS (level + 1)) tsks
+        tsks -> pure . mconcat . dbl <$> traverse (taskS (level + 1)) tsks
 
 tagsS :: SerializedTask -> Serializer
 tagsS task =
@@ -138,15 +139,14 @@ taskS :: Int -> SerializedTask -> DictionaryReader Utf8Builder
 taskS level task = do
     let ident = idd level
     let parts =
-            [ ident taskDescriptionS
+            [ taskTitleS level
+            , ident taskDescriptionS
             , subTasksS level
             , ident tagsS
             , ident relatedS
             , ident taskContributorS
             ]
-    main <- dbl . catMaybes <$> sequence (($ task) <$> parts)
-    title <- taskTitleS level task
-    pure $ mconcat [title, eol, mconcat main]
+    mconcat . dbl . catMaybes <$> sequence (($ task) <$> parts)
 
 serialize' :: SerializedTaskell -> DictionaryReader Utf8Builder
 serialize' tsk = do

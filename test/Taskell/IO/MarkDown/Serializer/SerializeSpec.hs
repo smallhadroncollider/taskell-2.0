@@ -9,11 +9,11 @@ import qualified RIO.Text as T
 import Test.Hspec
 
 import Taskell.IO.MarkDown.Serializer.Serialize (serialize)
-import Taskell.IO.MarkDown.Types (defaultDictionary)
+import Taskell.IO.MarkDown.Types
 
 import qualified Taskell.Data.Types.Taskell as Taskell
 
-import TmpData
+import TmpData (tmpData)
 
 readLine :: Int -> Taskell.Taskell -> Maybe Text
 readLine number tsk =
@@ -68,31 +68,28 @@ spec =
                                 it "title" $ do
                                     readLine 23 tmpData `shouldBe` Just "    - [x] Sub Sub Task"
                                 it "blank line" $ do readLine 24 tmpData `shouldBe` Just ""
-                                it "description" $ do
-                                    readLine 25 tmpData `shouldBe` Just "        Sub sub task"
-                                it "blank line" $ do readLine 26 tmpData `shouldBe` Just ""
                                 describe "sub-sub-sub-tasks" $ do
                                     it "title" $ do
-                                        readLine 27 tmpData `shouldBe`
+                                        readLine 25 tmpData `shouldBe`
                                             Just "        - [ ] Sub Sub Sub Task"
-                                    it "blank line" $ do readLine 28 tmpData `shouldBe` Just ""
+                                    it "blank line" $ do readLine 26 tmpData `shouldBe` Just ""
                                     it "description" $ do
-                                        readLine 29 tmpData `shouldBe`
+                                        readLine 27 tmpData `shouldBe`
                                             Just "            Sub sub sub task"
-                                    it "blank line" $ do readLine 30 tmpData `shouldBe` Just ""
-                        it "tags" $ do readLine 31 tmpData `shouldBe` Just "        `#spatula`"
-                        it "blank line" $ do readLine 32 tmpData `shouldBe` Just ""
-                    it "tags" $ do readLine 33 tmpData `shouldBe` Just "`#fish`, `#cow`"
-                    it "blank line" $ do readLine 34 tmpData `shouldBe` Just ""
+                                    it "blank line" $ do readLine 28 tmpData `shouldBe` Just ""
+                        it "tags" $ do readLine 29 tmpData `shouldBe` Just "        `#spatula`"
+                        it "blank line" $ do readLine 30 tmpData `shouldBe` Just ""
+                    it "tags" $ do readLine 31 tmpData `shouldBe` Just "`#fish`, `#cow`"
+                    it "blank line" $ do readLine 32 tmpData `shouldBe` Just ""
                     it "related" $ do
-                        readLine 35 tmpData `shouldBe`
+                        readLine 33 tmpData `shouldBe`
                             Just "**Related**: [First List / Fifth Task](#fifth-task)"
-                    it "blank line" $ do readLine 34 tmpData `shouldBe` Just ""
+                    it "blank line" $ do readLine 32 tmpData `shouldBe` Just ""
                     it "contributors" $ do
-                        readLine 37 tmpData `shouldBe` Just "**Contributors**: *@Bob*, *@Jim*"
+                        readLine 35 tmpData `shouldBe` Just "**Contributors**: *@Bob*, *@Jim*"
                 describe "next task" $ do
-                    it "should have break before" $ do readLine 38 tmpData `shouldBe` Just ""
-                    it "title" $ do readLine 39 tmpData `shouldBe` Just "### Third Task"
+                    it "should have break before" $ do readLine 36 tmpData `shouldBe` Just ""
+                    it "title" $ do readLine 37 tmpData `shouldBe` Just "### Third Task"
             describe "second list" $ do
-                it "should have break before" $ do readLine 58 tmpData `shouldBe` Just ""
-                it "title" $ do readLine 59 tmpData `shouldBe` Just "## Second List"
+                it "should have break before" $ do readLine 56 tmpData `shouldBe` Just ""
+                it "title" $ do readLine 57 tmpData `shouldBe` Just "## Second List"

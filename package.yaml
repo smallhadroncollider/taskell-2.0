@@ -64,6 +64,7 @@ tests:
     dependencies:
     - taskell2
     - hspec
+    - neat-interpolation
 
     ghc-options:
     - -threaded
