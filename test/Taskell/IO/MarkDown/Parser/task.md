@@ -18,6 +18,6 @@ Blah blah blah
 
 `#thing`, `#things`
 
-**Related**: [Stuff / Hello Mum](#hello-mum-1), [Things / How are you?](#how-are-you)
+**Related**: [Stuff And Things / Hello Mum](#hello-mum-1), [Things And Stuff / How are you?](#how-are-you)
 
 **Contributors**: *@Mark*, *@Jess*

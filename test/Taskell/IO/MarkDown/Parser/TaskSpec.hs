@@ -67,8 +67,8 @@ spec =
                     (^. taskRelated) <$>
                         output `shouldBe`
                         Right
-                            [ ("Stuff", "Hello Mum", "hello-mum-1")
-                            , ("Things", "How are you?", "how-are-you")
+                            [ ("Stuff And Things", "Hello Mum", "hello-mum-1")
+                            , ("Things And Stuff", "How are you?", "how-are-you")
                             ]
             describe "contributors" $ do
                 it "parses the contributors" $ do

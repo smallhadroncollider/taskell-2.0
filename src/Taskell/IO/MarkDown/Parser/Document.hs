@@ -19,8 +19,9 @@ contributorsTitleP cTitle = void . P.stripEmptyLines $ P.string ("## " <> cTitle
 
 contributorP :: P.Parser SerializedContributor
 contributorP =
-    SerializedContributor <$> (P.string "- **@" *> P.takeTo "**:") <*> (T.strip <$> P.takeTo "(") <*>
-    (P.takeTo ")" <* P.endOfLine)
+    SerializedContributor <$> (P.string "- **@" *> P.takeTill (== '*') <* P.string "**:") <*>
+    (T.strip <$> P.takeTill (== '(') <* P.string "(") <*>
+    (P.takeTill (== ')') <* P.string ")" <* P.endOfLine)
 
 contributorsP :: P.Parser [SerializedContributor]
 contributorsP = P.many' contributorP

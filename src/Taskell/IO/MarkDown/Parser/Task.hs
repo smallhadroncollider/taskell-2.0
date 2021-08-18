@@ -48,7 +48,7 @@ descriptionP dictionary level =
         pure . T.strip $ T.intercalate "\n" lns
 
 tagP :: P.Parser Text
-tagP = P.string "`#" *> P.takeTo "`"
+tagP = P.string "`#" *> P.takeTill (== '`') <* P.string "`"
 
 tagsP :: IndentedParser [Text]
 tagsP dictionary level =
@@ -58,9 +58,9 @@ tagsP dictionary level =
 
 relatedP :: P.Parser Related
 relatedP = do
-    lTitle <- P.string "[" *> P.takeTo " / "
-    tTitle <- P.takeTo "](#"
-    lnk <- P.takeTo ")"
+    lTitle <- T.strip <$> (P.string "[" *> P.takeTill (== '/') <* P.string "/")
+    tTitle <- T.strip <$> P.takeTill (== ']') <* P.string "](#"
+    lnk <- P.takeTill (== ')') <* P.string ")"
     pure (lTitle, tTitle, lnk)
 
 relatedsP :: IndentedParser [Related]
@@ -75,7 +75,7 @@ contributorsP dictionary level =
     P.stripEmptyLines $ do
         _ <- indent dictionary level
         _ <- P.string (dictionary ^. contributorsPrefix) <* P.string " "
-        (P.string "*@" *> P.takeTo "*") `P.sepBy1` P.lexeme (P.char ',')
+        (P.string "*@" *> P.takeTill (== '*') <* P.string "*") `P.sepBy1` P.lexeme (P.char ',')
 
 taskTitleP :: IndentedParser (Bool, Text)
 taskTitleP _ 0 = P.stripEmptyLines $ (False, ) <$> titleP 3
