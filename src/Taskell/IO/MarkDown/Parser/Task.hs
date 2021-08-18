@@ -19,13 +19,10 @@ indent dictionary level = P.string (T.replicate num " ")
   where
     num = (dictionary ^. indentAmount) * level
 
-stripEmptyLines :: P.Parser a -> P.Parser a
-stripEmptyLines p = P.many' P.endOfLine *> p
-
 -- parsers
 dueP :: IndentedParser Text
 dueP dictionary level =
-    stripEmptyLines $ do
+    P.stripEmptyLines $ do
         _ <- indent dictionary level
         date <- P.string (dictionary ^. duePrefix) *> P.line
         pure $ T.strip date
@@ -45,7 +42,7 @@ afterDescription dictionary level =
 
 descriptionP :: IndentedParser Text
 descriptionP dictionary level =
-    stripEmptyLines $ do
+    P.stripEmptyLines $ do
         _ <- indent dictionary level
         lns <- P.manyTill P.line (P.lookAhead $ afterDescription dictionary level)
         pure . T.strip $ T.intercalate "\n" lns
@@ -55,7 +52,7 @@ tagP = P.string "`#" *> P.takeTo "`"
 
 tagsP :: IndentedParser [Text]
 tagsP dictionary level =
-    stripEmptyLines $ do
+    P.stripEmptyLines $ do
         _ <- indent dictionary level
         tagP `P.sepBy1` P.lexeme (P.char ',')
 
@@ -68,22 +65,22 @@ relatedP = do
 
 relatedsP :: IndentedParser [Related]
 relatedsP dictionary level =
-    stripEmptyLines $ do
+    P.stripEmptyLines $ do
         _ <- indent dictionary level
         _ <- P.string (dictionary ^. relatedPrefix) <* P.string " "
         relatedP `P.sepBy1` P.lexeme (P.char ',')
 
 contributorsP :: IndentedParser [Text]
 contributorsP dictionary level =
-    stripEmptyLines $ do
+    P.stripEmptyLines $ do
         _ <- indent dictionary level
         _ <- P.string (dictionary ^. contributorsPrefix) <* P.string " "
         (P.string "*@" *> P.takeTo "*") `P.sepBy1` P.lexeme (P.char ',')
 
 taskTitleP :: IndentedParser (Bool, Text)
-taskTitleP _ 0 = stripEmptyLines $ (False, ) <$> titleP 3
+taskTitleP _ 0 = P.stripEmptyLines $ (False, ) <$> titleP 3
 taskTitleP dictionary level =
-    stripEmptyLines $ do
+    P.stripEmptyLines $ do
         _ <- indent dictionary (level - 1)
         _ <- P.string "- ["
         complete <- (== 'x') <$> P.choice [P.char ' ', P.char 'x']
@@ -93,7 +90,7 @@ taskTitleP dictionary level =
 
 taskP :: IndentedParser SerializedTask
 taskP dictionary level =
-    stripEmptyLines $ do
+    P.stripEmptyLines $ do
         (complete, ttl) <- taskTitleP dictionary level
         _ <- optional (dueP dictionary level)
         description <- optional (descriptionP dictionary level)

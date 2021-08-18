@@ -2,6 +2,7 @@ module Taskell.Utility.Parser
     ( lexeme
     , takeTo
     , line
+    , stripEmptyLines
     , module Data.Attoparsec.Combinator
     , module Data.Attoparsec.Text
     ) where
@@ -21,6 +22,9 @@ takeTo text =
         Nothing -> pure ""
         Just (ch, rest) -> do
             takeTill (== ch) <* string (T.singleton ch) <* string rest
+
+stripEmptyLines :: Parser a -> Parser a
+stripEmptyLines p = many' endOfLine *> p <* many' endOfLine
 
 line :: Parser Text
 line = takeTill isEndOfLine <* endOfLine
