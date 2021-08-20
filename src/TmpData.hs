@@ -15,9 +15,9 @@ import Taskell.Data.Types.Task (Parent(..), Task(..), TaskID(..), Tasks)
 contributor1, contributor2, contributor3 :: Contributor
 contributor1 = Contributor "Bob" "Bob" "bob@bob.com"
 
-contributor2 = Contributor "Jim" "Jim" "jim@jim.com"
+contributor2 = Contributor "Jenny" "Jenny" "jenny@jenny.com"
 
-contributor3 = Contributor "Jenny" "Jenny" "jenny@jenny.com"
+contributor3 = Contributor "Jim" "Jim" "jim@jim.com"
 
 allContributors :: Contributors
 allContributors =
@@ -28,41 +28,42 @@ allContributors =
         ]
 
 -- tasks
-task1, task2, task3, task4, task5, task6, task7, task8 :: Task
-task1 =
+list1Task1, list2Task1, list1Task2, list2Task2, list1Task3, subTask, subSubTask, subSubSubTask ::
+       Task
+list1Task1 =
     Task
         "First Task"
         (ParentList (ListID 1))
         "Do first thing"
         False
-        (TaskID <$> Seq.fromList [6])
-        (TaskID <$> Seq.fromList [5])
+        (TaskID <$> Seq.fromList [2])
+        (TaskID <$> Seq.fromList [7, 5, 6])
         (ContributorID <$> Seq.fromList [1, 2])
         [TagID 1, TagID 2]
 
-task2 =
+list2Task1 =
     Task
         "Second Task"
         (ParentList (ListID 2))
         "Do second thing"
         False
         []
-        (TaskID <$> Seq.fromList [3, 1])
+        (TaskID <$> Seq.fromList [1, 5])
         (ContributorID <$> Seq.fromList [1])
         [TagID 1]
 
-task3 =
+list1Task2 =
     Task
         "Third Task"
         (ParentList (ListID 1))
         "Do third thing"
         False
         []
-        (TaskID <$> Seq.fromList [1, 2])
+        (TaskID <$> Seq.fromList [1, 7])
         (ContributorID <$> Seq.fromList [2])
         [TagID 2]
 
-task4 =
+list2Task2 =
     Task
         "Fourth Task"
         (ParentList (ListID 2))
@@ -73,7 +74,7 @@ task4 =
         (ContributorID <$> Seq.fromList [3])
         [TagID 3]
 
-task5 =
+list1Task3 =
     Task
         "Fifth Task"
         (ParentList (ListID 1))
@@ -84,40 +85,40 @@ task5 =
         (ContributorID <$> Seq.fromList [2])
         [TagID 3]
 
-task6 =
-    Task "Sub Task" (ParentTask (TaskID 1)) "Sub task" False (TaskID <$> Seq.fromList [7]) [] [] []
+subTask =
+    Task "Sub Task" (ParentTask (TaskID 1)) "Sub task" False (TaskID <$> Seq.fromList [3]) [] [] []
 
-task7 =
+subSubTask =
     Task
         "Sub Sub Task"
-        (ParentTask (TaskID 6))
+        (ParentTask (TaskID 2))
         ""
         True
-        (TaskID <$> Seq.fromList [8])
+        (TaskID <$> Seq.fromList [4])
         []
         []
         [TagID 3]
 
-task8 = Task "Sub Sub Sub Task" (ParentTask (TaskID 7)) "Sub sub sub task" False [] [] [] []
+subSubSubTask = Task "Sub Sub Sub Task" (ParentTask (TaskID 3)) "Sub sub sub task" False [] [] [] []
 
 allTasks :: Tasks
 allTasks =
     HM.fromList
-        [ (TaskID 1, task1)
-        , (TaskID 2, task2)
-        , (TaskID 3, task3)
-        , (TaskID 4, task4)
-        , (TaskID 5, task5)
-        , (TaskID 6, task6)
-        , (TaskID 7, task7)
-        , (TaskID 8, task8)
+        [ (TaskID 1, list1Task1)
+        , (TaskID 7, list2Task1)
+        , (TaskID 5, list1Task2)
+        , (TaskID 8, list2Task2)
+        , (TaskID 6, list1Task3)
+        , (TaskID 2, subTask)
+        , (TaskID 3, subSubTask)
+        , (TaskID 4, subSubSubTask)
         ]
 
 -- lists
 list1, list2 :: List
-list1 = List "First List" (TaskID <$> Seq.fromList [1, 3, 5])
+list1 = List "First List" (TaskID <$> Seq.fromList [1, 5, 6])
 
-list2 = List "Second List" (TaskID <$> Seq.fromList [2, 4])
+list2 = List "Second List" (TaskID <$> Seq.fromList [7, 8])
 
 allLists :: Lists
 allLists = HM.fromList [(ListID 1, list1), (ListID 2, list2)]
@@ -127,11 +128,11 @@ allListsOrder = Seq.fromList [ListID 1, ListID 2]
 
 -- tags
 tag1, tag2, tag3 :: Tag
-tag1 = Tag "fish" [TaskID 1, TaskID 2]
+tag1 = Tag "fish" [TaskID 1, TaskID 7]
 
-tag2 = Tag "cow" [TaskID 1, TaskID 3]
+tag2 = Tag "cow" [TaskID 1, TaskID 5]
 
-tag3 = Tag "spatula" [TaskID 4, TaskID 5]
+tag3 = Tag "spatula" [TaskID 3, TaskID 6, TaskID 8]
 
 allTags :: Tags
 allTags = HM.fromList [(TagID 1, tag1), (TagID 2, tag2), (TagID 3, tag3)]

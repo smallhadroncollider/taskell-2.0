@@ -99,9 +99,9 @@ spec =
             describe "gets tasks for lists" $ do
                 it "list 1" $
                     tasksForList (ListID 1) testData `shouldBe`
-                    Right (Seq.fromList [task1, task3, task5])
+                    Right (Seq.fromList [list1Task1, list1Task2, list1Task3])
                 it "list 2" $
-                    tasksForList (ListID 2) testData `shouldBe` Right (Seq.fromList [task2, task4])
+                    tasksForList (ListID 2) testData `shouldBe` Right (Seq.fromList [list2Task1, list2Task2])
                 it "no list" $
                     tasksForList (ListID 3) testData `shouldBe`
                     Error.e "Unknown reference: ListID 3"

@@ -65,6 +65,20 @@ This is a thing with some stuff
 
 Blah blah blah
 
+- [x] A sub-task with the thing
+
+    - [x] Sub Sub Task
+
+        - [x] Sub Sub Sub Task
+
+            - [x] Süb Task 1
+            - [ ] Süb Task 2
+
+    - [ ] Another one
+    - [x] A thing
+
+- [ ] Nonsense
+
 ### Eat a thing
 
 This is a thing with some stuff

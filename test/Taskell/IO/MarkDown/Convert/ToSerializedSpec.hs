@@ -10,10 +10,9 @@ import Test.Hspec
 import qualified Taskell.Error as Error
 
 import Taskell.Data.Types.Task (TaskID(..))
+import qualified Taskell.IO.MarkDown.Convert.FromSerialized as F (convert)
 import Taskell.IO.MarkDown.Convert.ToSerialized (convert, relatedDictionary)
 import Taskell.IO.MarkDown.Types
-
-import TmpData
 
 smoosh :: Error.EitherError (Maybe a) -> Error.EitherError a
 smoosh (Left a) = Left a
@@ -24,41 +23,45 @@ smoosh (Right (Just a)) = Right a
 spec :: Spec
 spec =
     parallel $ do
+        tmpData <-
+            runIO $
+            F.convert defaultDictionary <$> readFileUtf8 "test/Taskell/IO/MarkDown/output.md"
         describe "related dictionary" $ do
             it "generates dictionary" $ do
-                relatedDictionary tmpData `shouldBe`
+                (relatedDictionary =<< tmpData) `shouldBe`
                     Right
                         [ (TaskID 1, ("First List", "First Task", "first-task"))
-                        , (TaskID 3, ("First List", "Third Task", "third-task"))
-                        , (TaskID 5, ("First List", "Fifth Task", "fifth-task"))
-                        , (TaskID 2, ("Second List", "Second Task", "second-task"))
-                        , (TaskID 4, ("Second List", "Fourth Task", "fourth-task"))
+                        , (TaskID 5, ("First List", "Third Task", "third-task"))
+                        , (TaskID 6, ("First List", "Fifth Task", "fifth-task"))
+                        , (TaskID 7, ("Second List", "Second Task", "second-task"))
+                        , (TaskID 8, ("Second List", "Fourth Task", "fourth-task"))
                         ]
         describe "convert" $ do
             describe "title" $ do
                 it "gets the title" $ do
-                    (^. taskellTitle) <$> convert tmpData `shouldBe` Right "Test"
+                    (^. taskellTitle) <$> (convert =<< tmpData) `shouldBe` Right "Test"
             describe "description" $ do
                 it "gets the description" $ do
-                    (^. taskellDescription) <$> convert tmpData `shouldBe` Right "Some test data"
+                    (^. taskellDescription) <$>
+                        (convert =<< tmpData) `shouldBe` Right "Some test data"
             describe "contributors" $ do
                 it "sorts the contributors alphabetically by name" $ do
                     (^. taskellContributors) <$>
-                        convert tmpData `shouldBe`
+                        (convert =<< tmpData) `shouldBe`
                         Right
                             [ SerializedContributor "Bob" "Bob" "bob@bob.com"
                             , SerializedContributor "Jenny" "Jenny" "jenny@jenny.com"
                             , SerializedContributor "Jim" "Jim" "jim@jim.com"
                             ]
             describe "lists" $ do
-                let lists = (^. taskellLists) <$> convert tmpData
+                let lists = (^. taskellLists) <$> (convert =<< tmpData)
                 let firstList = smoosh $ L.headMaybe <$> lists
                 it "sorts lists correctly" $ do
                     (^. listTitle) <$> firstList `shouldBe` Right "First List"
                 it "adds correct number of tasks" $ do
                     length . (^. listTasks) <$> firstList `shouldBe` Right 3
             describe "tasks" $ do
-                let lists = (^. taskellLists) <$> convert tmpData
+                let lists = (^. taskellLists) <$> (convert =<< tmpData)
                 let firstList = smoosh $ L.headMaybe <$> lists
                 let firstTask = smoosh $ L.headMaybe . (^. listTasks) <$> firstList
                 it "has correct title" $ do
@@ -68,11 +71,16 @@ spec =
                 it "has correct completion status" $ do
                     (^. taskComplete) <$> firstTask `shouldBe` Right False
                 it "has contributors" $ do
-                    (^. taskContributors) <$> firstTask `shouldBe` Right ["Bob", "Jim"]
+                    (^. taskContributors) <$> firstTask `shouldBe` Right ["Bob", "Jenny"]
                 it "has tags" $ do (^. taskTags) <$> firstTask `shouldBe` Right ["fish", "cow"]
                 it "has related tasks" $ do
                     (^. taskRelated) <$>
-                        firstTask `shouldBe` Right [("First List", "Fifth Task", "fifth-task")]
+                        firstTask `shouldBe`
+                        Right
+                            [ ("Second List", "Second Task", "second-task")
+                            , ("First List", "Third Task", "third-task")
+                            , ("First List", "Fifth Task", "fifth-task")
+                            ]
                 it "has sub-tasks" $ do
                     (^. taskTasks) <$>
                         firstTask `shouldBe`
@@ -102,5 +110,3 @@ spec =
                                   []
                                   []
                             ]
-            -- it "has related tasks" $ do
-            --     (^. taskRelated) <$> firstTask `shouldBe` Right ["fifth-task"]

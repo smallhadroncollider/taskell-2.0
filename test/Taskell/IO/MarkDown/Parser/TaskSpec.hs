@@ -58,7 +58,43 @@ spec =
                     it "has sub tasks" $ do
                         ((^. taskTasks) <$>) <$>
                             sub `shouldBe`
-                            Right (Just [SerializedTask "Sub Sub Task" Nothing True [] [] [] []])
+                            Right
+                                (Just
+                                     [ SerializedTask
+                                           "Sub Sub Task"
+                                           Nothing
+                                           True
+                                           [ SerializedTask
+                                                 "Sub Sub Sub Task"
+                                                 (Just "A sub sub sub description")
+                                                 True
+                                                 [ SerializedTask
+                                                       "Süb Task 1"
+                                                       Nothing
+                                                       True
+                                                       []
+                                                       []
+                                                       []
+                                                       []
+                                                 , SerializedTask
+                                                       "Süb Task 2"
+                                                       (Just "Süb task 2 description")
+                                                       False
+                                                       []
+                                                       []
+                                                       []
+                                                       []
+                                                 ]
+                                                 ["tag-for-sub-sub-sub-task"]
+                                                 []
+                                                 []
+                                           ]
+                                           []
+                                           []
+                                           []
+                                     , SerializedTask "Another one" Nothing False [] [] [] []
+                                     , SerializedTask "A thing" Nothing True [] [] [] []
+                                     ])
             describe "tags" $ do
                 it "parses the tags" $ do
                     (^. taskTags) <$> output `shouldBe` Right ["thing", "things"]

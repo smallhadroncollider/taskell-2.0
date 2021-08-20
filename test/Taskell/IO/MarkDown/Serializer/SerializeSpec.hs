@@ -83,10 +83,11 @@ spec =
                     it "blank line" $ do readLine 32 tmpData `shouldBe` Just ""
                     it "related" $ do
                         readLine 33 tmpData `shouldBe`
-                            Just "**Related**: [First List / Fifth Task](#fifth-task)"
+                            Just
+                                "**Related**: [Second List / Second Task](#second-task), [First List / Third Task](#third-task), [First List / Fifth Task](#fifth-task)"
                     it "blank line" $ do readLine 32 tmpData `shouldBe` Just ""
                     it "contributors" $ do
-                        readLine 35 tmpData `shouldBe` Just "**Contributors**: *@Bob*, *@Jim*"
+                        readLine 35 tmpData `shouldBe` Just "**Contributors**: *@Bob*, *@Jenny*"
                 describe "next task" $ do
                     it "should have break before" $ do readLine 36 tmpData `shouldBe` Just ""
                     it "title" $ do readLine 37 tmpData `shouldBe` Just "### Third Task"

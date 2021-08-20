@@ -33,19 +33,26 @@ afterDescription dictionary level =
         [ void (taskP dictionary level) -- same task block
         , void (taskP dictionary (level + 1)) -- sub-task block
         , void (tagsP dictionary level) -- related block
+        , void (tagsP dictionary (level - 1)) -- related block
         , void (relatedsP dictionary level) -- related block
+        , void (relatedsP dictionary (level - 1)) -- related block
         , void (contributorsP dictionary level) -- contributors block
+        , void (contributorsP dictionary (level - 1)) -- contributors block
         , void (titleP 3) -- task title
         , void (titleP 2) -- list title
         , void P.endOfInput -- end of file
         ]
 
+descriptionLineP :: IndentedParser Text
+descriptionLineP dictionary level = P.choice [indent dictionary level *> P.line, "" <$ P.endOfLine]
+
 descriptionP :: IndentedParser Text
-descriptionP dictionary level =
-    P.stripEmptyLines $ do
-        _ <- indent dictionary level
-        lns <- P.manyTill P.line (P.lookAhead $ afterDescription dictionary level)
-        pure . T.strip $ T.intercalate "\n" lns
+descriptionP dictionary level = do
+    lns <-
+        P.manyTill
+            (descriptionLineP dictionary level)
+            (P.lookAhead $ afterDescription dictionary level)
+    pure . T.strip $ T.intercalate "\n" lns
 
 tagP :: P.Parser Text
 tagP = P.string "`#" *> P.takeTill (== '`') <* P.string "`"
