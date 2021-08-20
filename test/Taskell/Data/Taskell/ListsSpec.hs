@@ -8,7 +8,7 @@ import qualified RIO.Seq as Seq
 
 import Test.Hspec
 
-import TmpData
+import TestData
 
 import Taskell.Data.Types.List as L (List(..), ListID(..), title)
 import Taskell.Data.Types.NextID (setListID)
@@ -27,9 +27,6 @@ import Taskell.Data.Taskell
     )
 
 import qualified Taskell.Error as Error
-
-testData :: Taskell
-testData = tmpData
 
 -- tests
 spec :: Spec
@@ -101,7 +98,8 @@ spec =
                     tasksForList (ListID 1) testData `shouldBe`
                     Right (Seq.fromList [list1Task1, list1Task2, list1Task3])
                 it "list 2" $
-                    tasksForList (ListID 2) testData `shouldBe` Right (Seq.fromList [list2Task1, list2Task2])
+                    tasksForList (ListID 2) testData `shouldBe`
+                    Right (Seq.fromList [list2Task1, list2Task2])
                 it "no list" $
                     tasksForList (ListID 3) testData `shouldBe`
                     Error.e "Unknown reference: ListID 3"

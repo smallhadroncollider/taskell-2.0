@@ -8,8 +8,7 @@ import Taskell.Data.Types.List as L (ListID(..))
 import Taskell.Data.Types.Task as T (TaskID(..))
 
 import Taskell.Data.Taskell
-    ( Taskell(..)
-    , getLists
+    ( getLists
     , moveListLeft
     , moveListRight
     , moveTaskDown
@@ -30,85 +29,91 @@ import qualified Taskell.IO.MarkDown.Parser.Document as D
 import qualified Taskell.IO.MarkDown.Serializer.Serialize as Ser
 import Taskell.IO.MarkDown.Types (defaultDictionary)
 
-import TmpData (tmpData)
-
-benchData :: Taskell
-benchData = tmpData
-
 main :: IO ()
 main = do
+    testData <- FC.convert defaultDictionary <$> readFileUtf8 "test/data/output.md"
     input <- readFileUtf8 "test/Taskell/IO/MarkDown/Parser/document.md"
-    defaultMain
-        [ bench "serializes" $ whnf (Ser.serialize defaultDictionary) benchData
-        , bench "converts" $ whnf TC.convert benchData
-        , bench "parses" $ whnf (D.parse defaultDictionary) input
-        , bench "reads" $ whnf (FC.convert defaultDictionary) input
-        , bench "getLists" $ whnf getLists benchData
-        , bgroup
-              "moveLists"
-              [ bench "move left - no change" $ whnf (moveListLeft (ListID 2)) benchData
-              , bench "move left - change" $ whnf (moveListLeft (ListID 1)) benchData
-              , bench "move right - no change" $ whnf (moveListRight (ListID 1)) benchData
-              , bench "move right - change" $ whnf (moveListRight (ListID 2)) benchData
-              ]
-        , bgroup
-              "tasksForList"
-              [ bench "existing list" $ whnf (tasksForList (ListID 1)) benchData
-              , bench "non-existing list" $ whnf (tasksForList (ListID 8)) benchData
-              ]
-        , bgroup
-              "tasksForTasks"
-              [ bench "existing task - with sub-tasks" $ whnf (tasksForTask (TaskID 1)) benchData
-              , bench "existing task - without sub-tasks" $ whnf (tasksForTask (TaskID 8)) benchData
-              , bench "non-existing task" $ whnf (tasksForTask (TaskID 50)) benchData
-              ]
-        , bgroup
-              "removeTasks"
-              [ bench "existing list - no relationships" $ whnf (removeTasks (TaskID 4)) benchData
-              , bench "existing list - some relationships" $ whnf (removeTasks (TaskID 8)) benchData
-              , bench "existing list - many relationships" $ whnf (removeTasks (TaskID 1)) benchData
-              , bench "non-existing list" $ whnf (removeTasks (TaskID 50)) benchData
-              ]
-        , bgroup
-              "moveTasks"
-              [ bench "move left - change" $ whnf (moveTaskLeft (TaskID 1)) benchData
-              , bench "move left - no change" $ whnf (moveTaskLeft (TaskID 2)) benchData
-              , bench "move right - change" $ whnf (moveTaskRight (TaskID 2)) benchData
-              , bench "move right - no change" $ whnf (moveTaskRight (TaskID 1)) benchData
-              , bench "move up - change" $ whnf (moveTaskUp (TaskID 3)) benchData
-              , bench "move up - no change" $ whnf (moveTaskUp (TaskID 1)) benchData
-              , bench "move down - change" $ whnf (moveTaskDown (TaskID 1)) benchData
-              , bench "move down - no change" $ whnf (moveTaskDown (TaskID 3)) benchData
-              ]
-        , bgroup
-              "text-wrapping"
-              [ bench "simple" $ whnf (S.withWidth 20) "hello"
-              , bench "longer" $
-                whnf (S.withWidth 20) "hello how are you today? My name is blah blah"
-              , bench "long" $ whnf (S.withWidth 20) longText
-              ]
-        , bgroup
-              "text-editing"
-              [ bench "up short" $ whnf (E.up <=< E.create 5) "Hello Today Fish"
-              , bench "up long" $ whnf (E.up <=< E.create 30) longText
-              , bench "down short" $ whnf (E.down <=< E.create 5) "Hello Today Fish"
-              , bench "down long" $ whnf (E.down <=< E.create 30) longText
-              , bench "begin short" $ whnf (E.begin <=< E.create 5) "Hello Today Fish"
-              , bench "begin long" $ whnf (E.begin <=< E.create 30) longText
-              , bench "end short" $ whnf (E.end <=< E.create 5) "Hello Today Fish"
-              , bench "end long" $ whnf (E.end <=< E.create 30) longText
-              , bench "endOfLine short" $ whnf (E.endOfLine <=< E.create 5) "Hello Today Fish"
-              , bench "endOfLine long" $ whnf (E.endOfLine <=< E.create 30) longText
-              , bench "top short" $ whnf (E.top <=< E.create 5) "Hello Today Fish"
-              , bench "top long" $ whnf (E.top <=< E.create 30) longText
-              , bench "bottom short" $ whnf (E.bottom <=< E.create 5) "Hello Today Fish"
-              , bench "bottom long" $ whnf (E.bottom <=< E.create 30) longText
-              , bench "insert short" $ whnf (E.insert "e" <=< E.create 5) "Hello Today Fish"
-              , bench "insert long" $ whnf (E.insert "e" <=< E.create 30) longText
-              , bench "backspace short" $ whnf (E.backspace <=< E.create 5) "Hello Today Fish"
-              , bench "backspace long" $ whnf (E.backspace <=< E.create 30) longText
-              ]
-        ]
+    case testData of
+        Left _ -> pure ()
+        Right benchData -> do
+            defaultMain
+                [ bench "serializes" $ whnf (Ser.serialize defaultDictionary) benchData
+                , bench "converts" $ whnf TC.convert benchData
+                , bench "parses" $ whnf (D.parse defaultDictionary) input
+                , bench "reads" $ whnf (FC.convert defaultDictionary) input
+                , bench "getLists" $ whnf getLists benchData
+                , bgroup
+                      "moveLists"
+                      [ bench "move left - no change" $ whnf (moveListLeft (ListID 1)) benchData
+                      , bench "move left - change" $ whnf (moveListLeft (ListID 2)) benchData
+                      , bench "move right - no change" $ whnf (moveListRight (ListID 2)) benchData
+                      , bench "move right - change" $ whnf (moveListRight (ListID 1)) benchData
+                      ]
+                , bgroup
+                      "tasksForList"
+                      [ bench "existing list" $ whnf (tasksForList (ListID 1)) benchData
+                      , bench "non-existing list" $ whnf (tasksForList (ListID 8)) benchData
+                      ]
+                , bgroup
+                      "tasksForTasks"
+                      [ bench "existing task - with sub-tasks" $
+                        whnf (tasksForTask (TaskID 1)) benchData
+                      , bench "existing task - without sub-tasks" $
+                        whnf (tasksForTask (TaskID 4)) benchData
+                      , bench "non-existing task" $ whnf (tasksForTask (TaskID 50)) benchData
+                      ]
+                , bgroup
+                      "removeTasks"
+                      [ bench "existing list - no relationships" $
+                        whnf (removeTasks (TaskID 8)) benchData
+                      , bench "existing list - some relationships" $
+                        whnf (removeTasks (TaskID 4)) benchData
+                      , bench "existing list - many relationships" $
+                        whnf (removeTasks (TaskID 1)) benchData
+                      , bench "non-existing list" $ whnf (removeTasks (TaskID 50)) benchData
+                      ]
+                , bgroup
+                      "moveTasks"
+                      [ bench "move left - change" $ whnf (moveTaskLeft (TaskID 1)) benchData
+                      , bench "move left - no change" $ whnf (moveTaskLeft (TaskID 7)) benchData
+                      , bench "move right - change" $ whnf (moveTaskRight (TaskID 7)) benchData
+                      , bench "move right - no change" $ whnf (moveTaskRight (TaskID 1)) benchData
+                      , bench "move up - change" $ whnf (moveTaskUp (TaskID 5)) benchData
+                      , bench "move up - no change" $ whnf (moveTaskUp (TaskID 1)) benchData
+                      , bench "move down - change" $ whnf (moveTaskDown (TaskID 1)) benchData
+                      , bench "move down - no change" $ whnf (moveTaskDown (TaskID 5)) benchData
+                      ]
+                , bgroup
+                      "text-wrapping"
+                      [ bench "simple" $ whnf (S.withWidth 20) "hello"
+                      , bench "longer" $
+                        whnf (S.withWidth 20) "hello how are you today? My name is blah blah"
+                      , bench "long" $ whnf (S.withWidth 20) longText
+                      ]
+                , bgroup
+                      "text-editing"
+                      [ bench "up short" $ whnf (E.up <=< E.create 5) "Hello Today Fish"
+                      , bench "up long" $ whnf (E.up <=< E.create 30) longText
+                      , bench "down short" $ whnf (E.down <=< E.create 5) "Hello Today Fish"
+                      , bench "down long" $ whnf (E.down <=< E.create 30) longText
+                      , bench "begin short" $ whnf (E.begin <=< E.create 5) "Hello Today Fish"
+                      , bench "begin long" $ whnf (E.begin <=< E.create 30) longText
+                      , bench "end short" $ whnf (E.end <=< E.create 5) "Hello Today Fish"
+                      , bench "end long" $ whnf (E.end <=< E.create 30) longText
+                      , bench "endOfLine short" $
+                        whnf (E.endOfLine <=< E.create 5) "Hello Today Fish"
+                      , bench "endOfLine long" $ whnf (E.endOfLine <=< E.create 30) longText
+                      , bench "top short" $ whnf (E.top <=< E.create 5) "Hello Today Fish"
+                      , bench "top long" $ whnf (E.top <=< E.create 30) longText
+                      , bench "bottom short" $ whnf (E.bottom <=< E.create 5) "Hello Today Fish"
+                      , bench "bottom long" $ whnf (E.bottom <=< E.create 30) longText
+                      , bench "insert short" $ whnf (E.insert "e" <=< E.create 5) "Hello Today Fish"
+                      , bench "insert long" $ whnf (E.insert "e" <=< E.create 30) longText
+                      , bench "backspace short" $
+                        whnf (E.backspace <=< E.create 5) "Hello Today Fish"
+                      , bench "backspace long" $ whnf (E.backspace <=< E.create 30) longText
+                      ]
+                ]
 
 longText :: Text
 longText =

@@ -8,7 +8,7 @@ import qualified RIO.Seq as Seq
 
 import Test.Hspec
 
-import TmpData
+import TestData
 
 import Taskell.Data.Taskell
 import Taskell.Data.Types.List as L
@@ -17,9 +17,6 @@ import Taskell.Data.Types.Task as T
 import qualified Taskell.Data.Types.Taskell as Taskell
 
 import qualified Taskell.Error as Error
-
-testData :: Taskell
-testData = tmpData
 
 -- tests
 spec :: Spec
@@ -135,7 +132,8 @@ spec =
                     changeTaskDescription "Blah" (TaskID 1) testData `shouldBe`
                     Right
                         (testData &
-                         Taskell.tasks %~ HM.insert (TaskID 1) (list1Task1 & T.description .~ "Blah"))
+                         Taskell.tasks %~
+                         HM.insert (TaskID 1) (list1Task1 & T.description .~ "Blah"))
             describe "removes tasks" $ do
                 it "task 1" $
                     removeTasks (TaskID 1) testData `shouldBe`
@@ -153,7 +151,8 @@ spec =
                                   [ ( TaskID 7
                                     , list2Task1 & T.tasks .~ [] &
                                       T.related .~ (TaskID <$> Seq.fromList [5]))
-                                  , (TaskID 5, list1Task2 & T.related .~ (TaskID <$> Seq.fromList [7]))
+                                  , ( TaskID 5
+                                    , list1Task2 & T.related .~ (TaskID <$> Seq.fromList [7]))
                                   , (TaskID 8, list2Task2)
                                   , (TaskID 6, list1Task3 & T.related .~ [])
                                   ])

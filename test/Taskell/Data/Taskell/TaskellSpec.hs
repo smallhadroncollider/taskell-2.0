@@ -6,12 +6,9 @@ import RIO
 
 import Test.Hspec
 
-import TmpData
+import TestData
 
 import Taskell.Data.Taskell (Taskell(..), changeDescription, rename)
-
-testData :: Taskell
-testData = tmpData
 
 -- tests
 spec :: Spec

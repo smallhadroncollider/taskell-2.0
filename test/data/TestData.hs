@@ -1,4 +1,4 @@
-module TmpData where
+module TestData where
 
 import RIO
 import qualified RIO.HashMap as HM
@@ -41,50 +41,6 @@ list1Task1 =
         (ContributorID <$> Seq.fromList [1, 2])
         [TagID 1, TagID 2]
 
-list2Task1 =
-    Task
-        "Second Task"
-        (ParentList (ListID 2))
-        "Do second thing"
-        False
-        []
-        (TaskID <$> Seq.fromList [1, 5])
-        (ContributorID <$> Seq.fromList [1])
-        [TagID 1]
-
-list1Task2 =
-    Task
-        "Third Task"
-        (ParentList (ListID 1))
-        "Do third thing"
-        False
-        []
-        (TaskID <$> Seq.fromList [1, 7])
-        (ContributorID <$> Seq.fromList [2])
-        [TagID 2]
-
-list2Task2 =
-    Task
-        "Fourth Task"
-        (ParentList (ListID 2))
-        "Do fourth thing"
-        False
-        []
-        []
-        (ContributorID <$> Seq.fromList [3])
-        [TagID 3]
-
-list1Task3 =
-    Task
-        "Fifth Task"
-        (ParentList (ListID 1))
-        "Do fifth thing"
-        False
-        []
-        (TaskID <$> Seq.fromList [1])
-        (ContributorID <$> Seq.fromList [2])
-        [TagID 3]
-
 subTask =
     Task "Sub Task" (ParentTask (TaskID 1)) "Sub task" False (TaskID <$> Seq.fromList [3]) [] [] []
 
@@ -101,17 +57,61 @@ subSubTask =
 
 subSubSubTask = Task "Sub Sub Sub Task" (ParentTask (TaskID 3)) "Sub sub sub task" False [] [] [] []
 
+list1Task2 =
+    Task
+        "Third Task"
+        (ParentList (ListID 1))
+        "Do third thing"
+        False
+        []
+        (TaskID <$> Seq.fromList [1, 7])
+        (ContributorID <$> Seq.fromList [2])
+        [TagID 2]
+
+list1Task3 =
+    Task
+        "Fifth Task"
+        (ParentList (ListID 1))
+        "Do fifth thing"
+        False
+        []
+        (TaskID <$> Seq.fromList [1])
+        (ContributorID <$> Seq.fromList [2])
+        [TagID 3]
+
+list2Task1 =
+    Task
+        "Second Task"
+        (ParentList (ListID 2))
+        "Do second thing"
+        False
+        []
+        (TaskID <$> Seq.fromList [1, 5])
+        (ContributorID <$> Seq.fromList [1])
+        [TagID 1]
+
+list2Task2 =
+    Task
+        "Fourth Task"
+        (ParentList (ListID 2))
+        "Do fourth thing"
+        False
+        []
+        []
+        (ContributorID <$> Seq.fromList [3])
+        [TagID 3]
+
 allTasks :: Tasks
 allTasks =
     HM.fromList
         [ (TaskID 1, list1Task1)
-        , (TaskID 7, list2Task1)
-        , (TaskID 5, list1Task2)
-        , (TaskID 8, list2Task2)
-        , (TaskID 6, list1Task3)
         , (TaskID 2, subTask)
         , (TaskID 3, subSubTask)
         , (TaskID 4, subSubSubTask)
+        , (TaskID 5, list1Task2)
+        , (TaskID 6, list1Task3)
+        , (TaskID 7, list2Task1)
+        , (TaskID 8, list2Task2)
         ]
 
 -- lists
@@ -142,6 +142,6 @@ allIDs :: NextID
 allIDs = setTaskID 8 . setListID 2 . setContributorID 3 . setTagID 3 $ nextIDs
 
 -- full
-tmpData :: Taskell
-tmpData =
+testData :: Taskell
+testData =
     Taskell "Test" "Some test data" allContributors allLists allListsOrder allTasks allTags allIDs

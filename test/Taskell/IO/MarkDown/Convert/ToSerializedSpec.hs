@@ -10,9 +10,10 @@ import Test.Hspec
 import qualified Taskell.Error as Error
 
 import Taskell.Data.Types.Task (TaskID(..))
-import qualified Taskell.IO.MarkDown.Convert.FromSerialized as F (convert)
 import Taskell.IO.MarkDown.Convert.ToSerialized (convert, relatedDictionary)
 import Taskell.IO.MarkDown.Types
+
+import TestData
 
 smoosh :: Error.EitherError (Maybe a) -> Error.EitherError a
 smoosh (Left a) = Left a
@@ -23,12 +24,9 @@ smoosh (Right (Just a)) = Right a
 spec :: Spec
 spec =
     parallel $ do
-        tmpData <-
-            runIO $
-            F.convert defaultDictionary <$> readFileUtf8 "test/Taskell/IO/MarkDown/output.md"
         describe "related dictionary" $ do
             it "generates dictionary" $ do
-                (relatedDictionary =<< tmpData) `shouldBe`
+                (relatedDictionary testData) `shouldBe`
                     Right
                         [ (TaskID 1, ("First List", "First Task", "first-task"))
                         , (TaskID 5, ("First List", "Third Task", "third-task"))
@@ -39,29 +37,28 @@ spec =
         describe "convert" $ do
             describe "title" $ do
                 it "gets the title" $ do
-                    (^. taskellTitle) <$> (convert =<< tmpData) `shouldBe` Right "Test"
+                    (^. taskellTitle) <$> (convert testData) `shouldBe` Right "Test"
             describe "description" $ do
                 it "gets the description" $ do
-                    (^. taskellDescription) <$>
-                        (convert =<< tmpData) `shouldBe` Right "Some test data"
+                    (^. taskellDescription) <$> (convert testData) `shouldBe` Right "Some test data"
             describe "contributors" $ do
                 it "sorts the contributors alphabetically by name" $ do
                     (^. taskellContributors) <$>
-                        (convert =<< tmpData) `shouldBe`
+                        (convert testData) `shouldBe`
                         Right
                             [ SerializedContributor "Bob" "Bob" "bob@bob.com"
                             , SerializedContributor "Jenny" "Jenny" "jenny@jenny.com"
                             , SerializedContributor "Jim" "Jim" "jim@jim.com"
                             ]
             describe "lists" $ do
-                let lists = (^. taskellLists) <$> (convert =<< tmpData)
+                let lists = (^. taskellLists) <$> (convert testData)
                 let firstList = smoosh $ L.headMaybe <$> lists
                 it "sorts lists correctly" $ do
                     (^. listTitle) <$> firstList `shouldBe` Right "First List"
                 it "adds correct number of tasks" $ do
                     length . (^. listTasks) <$> firstList `shouldBe` Right 3
             describe "tasks" $ do
-                let lists = (^. taskellLists) <$> (convert =<< tmpData)
+                let lists = (^. taskellLists) <$> (convert testData)
                 let firstList = smoosh $ L.headMaybe <$> lists
                 let firstTask = smoosh $ L.headMaybe . (^. listTasks) <$> firstList
                 it "has correct title" $ do

@@ -16,7 +16,9 @@ import qualified Taskell.Error as Error
 import Taskell.UI.State (State(..), StateReader, taskell)
 import Taskell.UI.Text.Split (withWidth)
 
-import TmpData (tmpData)
+import Taskell.Error (Error(..))
+import Taskell.IO.MarkDown.Convert.FromSerialized (convert)
+import Taskell.IO.MarkDown.Types (defaultDictionary)
 
 data Name =
     Name
@@ -81,5 +83,9 @@ run = do
                 , B.appStartEvent = pure
                 , B.appAttrMap = const $ B.attrMap V.defAttr []
                 }
-    let initialState = State tmpData
-    void . liftIO $ B.defaultMain app initialState
+    testData <- liftIO $ convert defaultDictionary <$> readFileUtf8 "test/data/output.md"
+    case testData of
+        Left (Error e) -> logError ("Couldn't read file: " <> display e)
+        Right tsk -> do
+            let initialState = State tsk
+            void . liftIO $ B.defaultMain app initialState

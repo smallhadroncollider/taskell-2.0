@@ -60,7 +60,10 @@ executables:
 tests:
   taskell2-test:
     main:                Spec.hs
-    source-dirs:         test
+    source-dirs:
+    - test
+    - test/data
+
     dependencies:
     - taskell2
     - hspec
