@@ -27,18 +27,21 @@ dueP dictionary level =
         date <- P.string (dictionary ^. duePrefix) *> P.line
         pure $ T.strip date
 
+allLevels :: Dictionary -> Int -> [P.Parser ()]
+allLevels dictionary level =
+    [ void (taskP dictionary level)
+    , void (tagsP dictionary level)
+    , void (relatedsP dictionary level)
+    , void (contributorsP dictionary level)
+    ]
+
 afterDescription :: IndentedParser ()
-afterDescription dictionary level =
-    P.choice
-        [ void (taskP dictionary level) -- same task block
-        , void (taskP dictionary (level + 1)) -- sub-task block
-        , void (tagsP dictionary level) -- related block
-        , void (tagsP dictionary (level - 1)) -- related block
-        , void (relatedsP dictionary level) -- related block
-        , void (relatedsP dictionary (level - 1)) -- related block
-        , void (contributorsP dictionary level) -- contributors block
-        , void (contributorsP dictionary (level - 1)) -- contributors block
-        , void (titleP 3) -- task title
+afterDescription dictionary currentLevel = do
+    let levels = [0 .. (currentLevel + 1)] :: [Int]
+    let allLs = concat $ allLevels dictionary <$> levels
+    P.choice $
+        allLs <>
+        [ void (titleP 3) -- task title
         , void (titleP 2) -- list title
         , void P.endOfInput -- end of file
         ]

@@ -19,8 +19,11 @@
 
 ## Bugs
 
-- Parsing descriptions
-    > Won't work if the description is followed by some block that's more than one level difference
+
+## Doing
+
 
 ## Done
 
+- Parsing descriptions
+    > Won't work if the description is followed by some block that's more than one level difference
