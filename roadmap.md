@@ -15,7 +15,6 @@
 
 ## Changes
 
-- MarkDown format: Move sub-tasks to end of task
 
 ## Bugs
 
@@ -27,3 +26,4 @@
 
 - Parsing descriptions
     > Won't work if the description is followed by some block that's more than one level difference
+- MarkDown format: Move sub-tasks to end of task

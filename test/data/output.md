@@ -16,23 +16,23 @@ Some test data
 
 Do first thing
 
+`#fish`, `#cow`
+
+**Related**: [Second List / Second Task](#second-task), [First List / Third Task](#third-task), [First List / Fifth Task](#fifth-task)
+
+**Contributors**: *@Bob*, *@Jenny*
+
 - [ ] Sub Task
 
     Sub task
+
+    `#spatula`
 
     - [x] Sub Sub Task
 
         - [ ] Sub Sub Sub Task
 
             Sub sub sub task
-
-    `#spatula`
-
-`#fish`, `#cow`
-
-**Related**: [Second List / Second Task](#second-task), [First List / Third Task](#third-task), [First List / Fifth Task](#fifth-task)
-
-**Contributors**: *@Bob*, *@Jenny*
 
 ### Third Task
 

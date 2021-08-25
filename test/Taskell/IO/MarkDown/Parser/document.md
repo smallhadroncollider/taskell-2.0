@@ -19,21 +19,21 @@ This is a thing with some stuff
 
 Blah blah blah
 
-- [x] A sub-task with the thing
-
-    Sub task
-
-    - [x] Sub Sub Task
-
-    `#submarine`, `#subcutaneous`
-
-- [ ] Nonsense
-
 `#thing`, `#things`
 
 **Related**: [Stuff / Do a thing](#do-a-thing)
 
 **Contributors**: *@Mark*, *@Jess*
+
+- [x] A sub-task with the thing
+
+    Sub task
+
+    `#submarine`, `#subcutaneous`
+
+    - [x] Sub Sub Task
+
+- [ ] Nonsense
 
 ### How are you?
 

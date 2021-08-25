@@ -141,10 +141,10 @@ taskS level task = do
     let parts =
             [ taskTitleS level
             , ident taskDescriptionS
-            , subTasksS level
             , ident tagsS
             , ident relatedS
             , ident taskContributorS
+            , subTasksS level
             ]
     mconcat . dbl . catMaybes <$> sequence (($ task) <$> parts)
 

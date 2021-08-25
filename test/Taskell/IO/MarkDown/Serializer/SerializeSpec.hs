@@ -57,41 +57,42 @@ spec =
                     it "title" $ do readLine 15 testData `shouldBe` Just "### First Task"
                     it "line break" $ do readLine 16 testData `shouldBe` Just ""
                     it "description" $ do readLine 17 testData `shouldBe` Just "Do first thing"
-                    describe "sub-tasks" $ do
-                        it "should have break before" $ do readLine 18 testData `shouldBe` Just ""
-                        describe "first sub-task" $ do
-                            it "title" $ do readLine 19 testData `shouldBe` Just "- [ ] Sub Task"
-                            it "blank line" $ do readLine 20 testData `shouldBe` Just ""
-                            it "description" $ do
-                                readLine 21 testData `shouldBe` Just "    Sub task"
-                            it "blank line" $ do readLine 22 testData `shouldBe` Just ""
-                            describe "sub-sub-tasks" $ do
-                                it "title" $ do
-                                    readLine 23 testData `shouldBe` Just "    - [x] Sub Sub Task"
-                                it "blank line" $ do readLine 24 testData `shouldBe` Just ""
-                                describe "sub-sub-sub-tasks" $ do
-                                    it "title" $ do
-                                        readLine 25 testData `shouldBe`
-                                            Just "        - [ ] Sub Sub Sub Task"
-                                    it "blank line" $ do readLine 26 testData `shouldBe` Just ""
-                                    it "description" $ do
-                                        readLine 27 testData `shouldBe`
-                                            Just "            Sub sub sub task"
-                                    it "blank line" $ do readLine 28 testData `shouldBe` Just ""
-                        it "tags" $ do readLine 29 testData `shouldBe` Just "        `#spatula`"
-                        it "blank line" $ do readLine 30 testData `shouldBe` Just ""
-                    it "tags" $ do readLine 31 testData `shouldBe` Just "`#fish`, `#cow`"
-                    it "blank line" $ do readLine 32 testData `shouldBe` Just ""
+                    it "blank line" $ do readLine 18 testData `shouldBe` Just ""
+                    it "tags" $ do readLine 19 testData `shouldBe` Just "`#fish`, `#cow`"
+                    it "blank line" $ do readLine 20 testData `shouldBe` Just ""
                     it "related" $ do
-                        readLine 33 testData `shouldBe`
+                        readLine 21 testData `shouldBe`
                             Just
                                 "**Related**: [Second List / Second Task](#second-task), [First List / Third Task](#third-task), [First List / Fifth Task](#fifth-task)"
-                    it "blank line" $ do readLine 32 testData `shouldBe` Just ""
+                    it "blank line" $ do readLine 22 testData `shouldBe` Just ""
                     it "contributors" $ do
-                        readLine 35 testData `shouldBe` Just "**Contributors**: *@Bob*, *@Jenny*"
+                        readLine 23 testData `shouldBe` Just "**Contributors**: *@Bob*, *@Jenny*"
+                    describe "sub-tasks" $ do
+                        it "should have break before" $ do readLine 24 testData `shouldBe` Just ""
+                        describe "first sub-task" $ do
+                            it "title" $ do readLine 25 testData `shouldBe` Just "- [ ] Sub Task"
+                            it "blank line" $ do readLine 26 testData `shouldBe` Just ""
+                            it "description" $ do
+                                readLine 27 testData `shouldBe` Just "    Sub task"
+                            it "blank line" $ do readLine 28 testData `shouldBe` Just ""
+                            describe "sub-sub-tasks" $ do
+                                it "title" $ do
+                                    readLine 29 testData `shouldBe` Just "    - [x] Sub Sub Task"
+                                it "blank line" $ do readLine 30 testData `shouldBe` Just ""
+                                it "tags" $ do
+                                    readLine 31 testData `shouldBe` Just "        `#spatula`"
+                                it "blank line" $ do readLine 32 testData `shouldBe` Just ""
+                                describe "sub-sub-sub-tasks" $ do
+                                    it "title" $ do
+                                        readLine 33 testData `shouldBe`
+                                            Just "        - [ ] Sub Sub Sub Task"
+                                    it "blank line" $ do readLine 34 testData `shouldBe` Just ""
+                                    it "description" $ do
+                                        readLine 35 testData `shouldBe`
+                                            Just "            Sub sub sub task"
                 describe "next task" $ do
                     it "should have break before" $ do readLine 36 testData `shouldBe` Just ""
                     it "title" $ do readLine 37 testData `shouldBe` Just "### Third Task"
             describe "second list" $ do
-                it "should have break before" $ do readLine 56 testData `shouldBe` Just ""
+                it "should have break before" $ do readLine 38 testData `shouldBe` Just ""
                 it "title" $ do readLine 57 testData `shouldBe` Just "## Second List"

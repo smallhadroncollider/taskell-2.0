@@ -104,10 +104,10 @@ taskP dictionary level =
         (complete, ttl) <- taskTitleP dictionary level
         _ <- optional (dueP dictionary level)
         description <- optional (descriptionP dictionary level)
-        tasks <- P.many' (taskP dictionary (level + 1))
         tags <- P.option [] (tagsP dictionary level)
         related <- P.option [] (relatedsP dictionary level)
         contributors <- P.option [] (contributorsP dictionary level)
+        tasks <- P.many' (taskP dictionary (level + 1))
         let desc =
                 if description == Just ""
                     then Nothing
