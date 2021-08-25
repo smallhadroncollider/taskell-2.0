@@ -1,1 +1,1 @@
-stack test --work-dir .stack-test
+stack test --coverage --work-dir .stack-test
